@@ -4,4 +4,5 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
      path("api-token-auth/",views.CustomAuthToken.as_view(), name="login_api_token_auth"),
+     path("create-user-profile/",views.CreateUserProfile, name="create_user_profile"),
 ]
