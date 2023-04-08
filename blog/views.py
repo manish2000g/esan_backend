@@ -36,7 +36,7 @@ def Article_Detail(request, slug):
 def Featured_Articles(request):
     featured_articles = Articles.objects.all().order_by('-id')[:10]
     serializer = [ArticleSerializer(article).data for article in featured_articles]
-    return Response(serializer)  
+    return Response({'featured_articles': serializer})  
 
 
 @api_view(["GET"])
