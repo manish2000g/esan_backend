@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'home',
     'blog',
-    'ckeditor'
+    'ckeditor',
     'account',
 ]
 
