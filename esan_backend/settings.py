@@ -64,8 +64,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'esan_backend.wsgi.application'
 
-AUTH_USER_MODEL = 'account.UserProfile'
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
