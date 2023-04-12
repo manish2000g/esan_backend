@@ -1,9 +1,23 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 
+
+class UserProfile(AbstractUser):
+    role_choices = (
+        ('player', 'Player'),
+        ('organization', 'Organization'),
+        ('organizer', 'Organizer'),
+        ('blog_writer', 'Blog Writer'),
+        ('admin', 'Admin'),
+    )
+    role = models.CharField(max_length=15, choices=role_choices)
+
+    def __str__(self) -> str:
+        return self.username
     
 class Player(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     profile_picture = models.ImageField(upload_to='media/images/player_profile_pictures/')
     country = models.CharField(max_length=100)
@@ -13,7 +27,7 @@ class Player(models.Model):
         return self.name
 
 class BlogWriter(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     bio = models.TextField(max_length=500)
     profile_picture = models.ImageField(upload_to='media/images/blog_profile_pictures/')
@@ -24,7 +38,7 @@ class BlogWriter(models.Model):
         return self.name
 
 class Organizer(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     logo = models.ImageField(upload_to='media/images/organizer_logos/')
     description = models.TextField(max_length=500)
@@ -35,7 +49,7 @@ class Organizer(models.Model):
         return self.name
 
 class Organization(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     organization_name = models.CharField(max_length=255)
     logo = models.ImageField(upload_to='media/images/organization_logos/')
     description = models.TextField(max_length=500)

@@ -184,3 +184,5 @@ JAZZMIN_SETTINGS = {
     # Add a language dropdown into the admin
     # "language_chooser": True,
 }
+
+AUTH_USER_MODEL = 'account.UserProfile'
