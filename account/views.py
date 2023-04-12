@@ -28,15 +28,17 @@ def CreateUserProfile(request):
     first_name = request.POST['first_name']
     last_name = request.POST['last_name']
     email = request.POST['email']
+    role = request.POST['role']
     password = request.POST['password']
     is_player = request.POST.get('is_player', "False") == "True"
     is_blog_writer = request.POST.get('is_blog_writer', "False") == "True"
     is_organizer = request.POST.get('is_organizer', "False") == "True"
     is_organization = request.POST.get('is_organization', "False") == "True"
 
-    user = User.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name)
+
 
     if is_player:
+        user = User.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name, role=role)
         name = request.POST['name']
         country = request.POST['country']
         phone_number = request.POST['phone_number']
