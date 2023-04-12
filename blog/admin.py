@@ -1,7 +1,7 @@
 from django.contrib import admin
-from . models import ArticleCategory, Articles, Tag
+from . models import ArticleCategory, Article, Tag
 # Register your models here.
 
 admin.site.register(ArticleCategory)
-admin.site.register(Articles)
+admin.site.register(Article)
 admin.site.register(Tag)

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from .seralizers import ArticleSerializer, TagSerializer
-from .models import Articles, Tag
+from .models import Article, Tag
 from rest_framework.decorators import api_view
 from rest_framework import status
 
@@ -9,10 +9,10 @@ from rest_framework import status
 
 @api_view(["GET"])
 def Article(request):
-    featured_articles = Articles.objects.filter(is_featured=True)
+    featured_articles = Article.objects.filter(is_featured=True)
     featured_articles_serializers = ArticleSerializer(featured_articles, many = True)
 
-    popoular_articles = Articles.objects.filter(is_popular=True)
+    popoular_articles = Article.objects.filter(is_popular=True)
     popoular_artcles_serializers = ArticleSerializer(popoular_articles, many = True)
 
     tag = Tag.objects.all()
@@ -26,7 +26,7 @@ def Article(request):
 @api_view(['GET'])
 def Article_Detail(request, slug):
     try:
-        article_detail = Articles.objects.get(slug=slug)
+        article_detail = Article.objects.get(slug=slug)
         article_detail_serializer = ArticleSerializer(article_detail)
         return Response(article_detail_serializer.data)
     except:
@@ -34,13 +34,13 @@ def Article_Detail(request, slug):
 
 @api_view(['GET'])
 def Featured_Articles(request):
-    featured_articles = Articles.objects.filter(is_featured=True).order_by('-id')[:10]
+    featured_articles = Article.objects.filter(is_featured=True).order_by('-id')[:10]
     serializer = [ArticleSerializer(article).data for article in featured_articles]
     return Response({'featured_articles': serializer})  
 
 
 @api_view(["GET"])
 def Popular_Articles(request):
-    popular_articles = Articles.objects.filter(is_popular=True).order_by('-created_at')[:5]
+    popular_articles = Article.objects.filter(is_popular=True).order_by('-created_at')[:5]
     popular_articles_data = [ArticleSerializer(article).data for article in popular_articles]
     return Response(popular_articles_data)

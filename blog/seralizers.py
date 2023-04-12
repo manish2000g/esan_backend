@@ -1,16 +1,16 @@
 from rest_framework import serializers
-from .models import  Articles, Tag
+from .models import  Article, Tag
 
 class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Articles
+        model = Article
         fields = '__all__'
         ordering = ['-created_at']
 
 class ArticleDetailSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Articles
-        fields = 'slug'
+        model = Article
+        fields = '__all__'
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,6 +1,5 @@
 from django.db import models
 from ckeditor.fields import RichTextField
-# Create your models here.
 
     
 class ArticleCategory(models.Model):
@@ -16,20 +15,21 @@ class Tag(models.Model):
     def __str__(self):
         return self.tag_name
 
-class Articles(models.Model):
+class Article(models.Model):
     slug = models.SlugField(unique=True)
     thumbnail_image = models.ImageField(upload_to='static/images')
     thumbnail_image_alt_description = models.CharField(max_length=300)
     title = models.CharField(max_length=300)
     article_content = RichTextField(max_length=500) 
-    c_name = models.ForeignKey(ArticleCategory, on_delete=models.CASCADE, help_text='Article Category')
+    c_name = models.ManyToManyField(ArticleCategory, help_text='Article Category',related_name="categories")
     author_name = models.CharField(max_length=200)
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag,related_name="tags")
     time_to_read = models.PositiveSmallIntegerField(default=False)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
     is_featured = models.BooleanField(default=False)
     is_popular = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
     meta_title = models.CharField(max_length=200)
     meta_description = models.TextField(max_length=400)
 
