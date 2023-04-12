@@ -8,7 +8,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('blog.urls')),
     path('api/', include('home.urls')),
-    path('api/', include('account.urls'))
+    path('api/', include('account.urls')),
+    path('api/', include('tournament.urls'))
 ]
 
 

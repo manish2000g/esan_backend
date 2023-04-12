@@ -36,7 +36,7 @@ class BlogWriter(models.Model):
 class Organizer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    logo = models.ImageField(upload_to='media/static/images/organizer_logos/')
+    logo = models.ImageField(upload_to='media/static/images/organizer_logos/', null=True)
     description = models.TextField(max_length=500)
     website = models.URLField(max_length=200)
     email = models.EmailField(max_length=254)
