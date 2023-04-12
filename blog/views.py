@@ -20,6 +20,7 @@ def CreateArticle(request):
     is_featured = request.POST.get('is_featured')
     is_popular = request.POST.get('is_popular')
     is_verified = request.POST.get('is_verified')
+    is_published = request.POST.get('is_published')
     meta_title = request.POST.get('meta_title')
     meta_description = request.POST.get('meta_description')
 
@@ -38,6 +39,7 @@ def CreateArticle(request):
         is_featured=is_featured,
         is_popular=is_popular,
         is_verified=is_verified,
+        is_published =is_published, 
         meta_title=meta_title,
         meta_description=meta_description
     )
@@ -66,6 +68,7 @@ def UpdateArticle(request, article_id):
     is_featured = request.POST.get('is_featured')
     is_popular = request.POST.get('is_popular')
     is_verified = request.POST.get('is_verified')
+    is_published = request.POST.get('is_published')
     meta_title = request.POST.get('meta_title')
     meta_description = request.POST.get('meta_description')
 
@@ -83,6 +86,7 @@ def UpdateArticle(request, article_id):
     article.is_featured = is_featured
     article.is_popular = is_popular
     article.is_verified = is_verified
+    article.is_published= is_published
     article.meta_title = meta_title
     article.meta_description = meta_description
     article.tags.clear()  # Clear existing tags

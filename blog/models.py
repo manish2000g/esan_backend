@@ -30,6 +30,7 @@ class Article(models.Model):
     is_featured = models.BooleanField(default=False)
     is_popular = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
+    is_published = models.BooleanField(default=False)
     meta_title = models.CharField(max_length=200)
     meta_description = models.TextField(max_length=400)
 
