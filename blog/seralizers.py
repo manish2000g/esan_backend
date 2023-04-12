@@ -3,7 +3,7 @@ from .models import  Articles, Tag
 
 class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
-        model: Articles
+        model = Articles
         fields = '__all__'
         ordering = ['-created_at']
 
@@ -14,7 +14,7 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
-        model: Tag
+        model = Tag
         fields = '__all__'
 
     
