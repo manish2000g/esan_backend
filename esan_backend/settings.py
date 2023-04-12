@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'blog',
     'ckeditor',
     'account',
+    'tournament',
 ]
 
 MIDDLEWARE = [
