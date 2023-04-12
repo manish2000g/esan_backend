@@ -1,9 +1,12 @@
 from django.urls import path
-from .views import Article, Article_Detail, Featured_Articles, Popular_Articles
+from .views import RetriveArticles, ArticleDetail, FeaturedArticles, PopularArticles,CreateArticle,UpdateArticle,DeleteArticle
 
 urlpatterns = [
-    path('articles/', Article, name = 'articles'),
-    path('articles/<str:slug>/', Article_Detail, name = 'article_details'),
-    path('featured_articles/', Featured_Articles, name = 'featured_articles'),
-    path('popular_articles/', Popular_Articles, name = 'popular_articles')
+    path('create-article/', CreateArticle, name = 'create_articles'),
+    path('update-article/<int:article_id>/', UpdateArticle, name = 'update_articles'),
+    path('delete-article/<int:article_id>/', DeleteArticle, name = 'delete_articles'),
+    path('articles/', RetriveArticles, name = 'get_articles'),
+    path('articles/<str:slug>/', ArticleDetail, name = 'article_details'),
+    path('featured_articles/', FeaturedArticles, name = 'featured_articles'),
+    path('popular_articles/', PopularArticles, name = 'popular_articles')
 ]

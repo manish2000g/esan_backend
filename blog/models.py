@@ -1,6 +1,6 @@
 from django.db import models
 from ckeditor.fields import RichTextField
-
+from account.models import BlogWriter
     
 class ArticleCategory(models.Model):
     c_name = models.CharField(max_length=50, help_text='Artcile Category Name')
@@ -22,7 +22,7 @@ class Article(models.Model):
     title = models.CharField(max_length=300)
     article_content = RichTextField(max_length=500) 
     c_name = models.ManyToManyField(ArticleCategory, help_text='Article Category',related_name="categories")
-    author_name = models.CharField(max_length=200)
+    author = models.ForeignKey(BlogWriter,on_delete=models.DO_NOTHING,related_name="author")
     tags = models.ManyToManyField(Tag,related_name="tags")
     time_to_read = models.PositiveSmallIntegerField(default=False)
     created_at = models.DateField(auto_now_add=True)
