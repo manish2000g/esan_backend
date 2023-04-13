@@ -28,7 +28,6 @@ def CreateUserProfile(request):
     first_name = request.POST['first_name']
     last_name = request.POST['last_name']
     email = request.POST['email']
-    # role = request.POST['role']
     password = request.POST['password']
     is_player = request.POST.get('is_player', "False") == "True"
     is_blog_writer = request.POST.get('is_blog_writer', "False") == "True"
