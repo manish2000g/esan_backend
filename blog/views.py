@@ -1,11 +1,14 @@
 from django.shortcuts import render
 from rest_framework.response import Response
-from .seralizers import ArticleSerializer, TagSerializer
-from .models import Article, Tag
+from .seralizers import ArticleSerializer, CommentSerializer, TagSerializer
+from .models import Article, Comment, Tag
 from account.models import BlogWriter
 from rest_framework.decorators import api_view
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+
+
+
 
 def CreateArticle(request):
     # Extract the data sent from JavaScript
@@ -51,6 +54,22 @@ def CreateArticle(request):
         article.tags.add(tag)
 
     return Response({'success': "Sucessfully Uploaded Article"})
+
+@api_view(['POST'])
+def create_comment(request):
+    article_id = request.POST.get('article_id')
+    name = request.POST.get('name')
+    body = request.POST.get('body')
+
+    article = get_object_or_404(Article, id=article_id)
+
+    comment = Comment(article=article, name=name,  body=body)
+    comment.save()
+
+    serializer = CommentSerializer(comment)
+
+    return Response({'success': "Successfully Added Comment", 'comment': serializer.data})
+
 
 def UpdateArticle(request, article_id):
     # Retrieve the article to be updated
@@ -125,14 +144,22 @@ def RetriveArticles(request):
         "tag" : tag_serializers.data
     })
 
+# @api_view(['GET'])
+# def ArticleDetail(request, slug):
+#     try:
+#         article_detail = Article.objects.get(slug=slug)
+#         article_detail_serializer = ArticleSerializer(article_detail)
+#         return Response(article_detail_serializer.data)
+#     except:
+#         return Response(status=status.HTTP_404_NOT_FOUND)
+
 @api_view(['GET'])
-def ArticleDetail(request, slug):
-    try:
-        article_detail = Article.objects.get(slug=slug)
-        article_detail_serializer = ArticleSerializer(article_detail)
-        return Response(article_detail_serializer.data)
-    except:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+def Article_Detail(request, slug):
+    article = Article.objects.get(slug=slug)
+    comments = Comment.objects.filter(article=article)
+    serializer = ArticleSerializer(article)
+    comments_serializer = CommentSerializer(comments, many=True)
+    return Response({'article': serializer.data, 'comments': comments_serializer.data})
 
 @api_view(['GET'])
 def FeaturedArticles(request):
