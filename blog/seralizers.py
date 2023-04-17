@@ -18,6 +18,8 @@ class TagSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class CommentSerializer(serializers.ModelSerializer):
+    replies = serializers.StringRelatedField(many=True)
+
     class Meta:
         model = Comment
-        fields = '__all__'   
+        fields = '__all__' 

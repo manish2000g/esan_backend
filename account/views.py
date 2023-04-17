@@ -86,7 +86,3 @@ def CreateUserProfile(request):
 
 
 
-
-
-
-# organization many to many 

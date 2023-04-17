@@ -4,7 +4,6 @@ from .seralizers import ArticleSerializer, CommentSerializer, TagSerializer
 from .models import Article, Comment, Tag
 from account.models import BlogWriter
 from rest_framework.decorators import api_view
-from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 
@@ -60,15 +59,22 @@ def create_comment(request):
     article_id = request.POST.get('article_id')
     name = request.POST.get('name')
     body = request.POST.get('body')
+    parent_comment_id = request.POST.get('parent_comment_id')
 
     article = get_object_or_404(Article, id=article_id)
 
-    comment = Comment(article=article, name=name,  body=body)
+    if parent_comment_id:
+        parent_comment = get_object_or_404(Comment, id=parent_comment_id)
+        comment = Comment(article=article, name=name, body=body, parent_comment=parent_comment)
+    else:
+        comment = Comment(article=article, name=name, body=body)
+
     comment.save()
 
     serializer = CommentSerializer(comment)
 
     return Response({'success': "Successfully Added Comment", 'comment': serializer.data})
+
 
 
 def UpdateArticle(request, article_id):
