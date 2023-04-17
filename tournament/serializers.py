@@ -1,10 +1,7 @@
-from rest_framework import serializers
 
 from account.models import Organizer
-from .models import Tournament, Registration, Schedule, Participant, Match, LivePage, Announcement
-
 from rest_framework import serializers
-from .models import Sponsor, Tournament, Post, Registration, Schedule, Participant, Match, LivePage, Announcement
+from .models import BannerImage, Match, PrizePool, Result, Sponsor, Tournament, Post, Registration, Participant, LivePage, Announcement, TournamentBracket
 from account.serializers import OrganizationSerializer, OrganizerSerializer, PlayerSerializer
 
 class SponsorSerializer(serializers.ModelSerializer):
@@ -20,14 +17,14 @@ class TournamentSerializer(serializers.ModelSerializer):
         model = Tournament
         fields = '__all__'
 
-    def create(self, validated_data):
-        organizer_data = validated_data.pop('organizer')
-        sponsors_data = validated_data.pop('sponsors')
-        tournament = Tournament.objects.create(**validated_data)
-        organizer = Organizer.objects.create(tournament=tournament, **organizer_data)
-        sponsors = [Sponsor.objects.create(tournament=tournament, **sponsor_data) for sponsor_data in sponsors_data]
-        tournament.sponsors.set(sponsors)
-        return tournament
+    # def create(self, validated_data):
+    #     organizer_data = validated_data.pop('organizer')
+    #     sponsors_data = validated_data.pop('sponsors')
+    #     tournament = Tournament.objects.create(**validated_data)
+    #     organizer = Organizer.objects.create(tournament=tournament, **organizer_data)
+    #     sponsors = [Sponsor.objects.create(tournament=tournament, **sponsor_data) for sponsor_data in sponsors_data]
+    #     tournament.sponsors.set(sponsors)
+    #     return tournament
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
@@ -43,15 +40,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
         model = Registration
         fields = '__all__'
 
-class ScheduleSerializer(serializers.ModelSerializer):
-    tournament = TournamentSerializer()
-    team1 = RegistrationSerializer()
-    team2 = RegistrationSerializer()
-    winner = RegistrationSerializer()
-
-    class Meta:
-        model = Schedule
-        fields = '__all__'
 
 class ParticipantSerializer(serializers.ModelSerializer):
     tournament = TournamentSerializer()
@@ -70,6 +58,13 @@ class MatchSerializer(serializers.ModelSerializer):
         model = Match
         fields = '__all__'
 
+
+class TournamentBracketSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TournamentBracket
+        fields = '__all__'
+
+
 class LivePageSerializer(serializers.ModelSerializer):
     tournament = TournamentSerializer()
 
@@ -84,3 +79,17 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         model = Announcement
         fields = '__all__'
 
+class BannerImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BannerImage
+        fields = '__all__'
+
+class PrizePoolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PrizePool
+        fields = '__all__'
+
+class ResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Result
+        fields = '__all__'
