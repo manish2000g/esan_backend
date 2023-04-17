@@ -57,10 +57,6 @@ class Game(models.Model):
 class Participant(models.Model):
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
-
-class Match(models.Model):
-    game = models.ForeignKey(Game, on_delete=models.CASCADE)
-    match_date = models.DateTimeField()
     
 class Sponsor(models.Model):
     name = models.CharField(max_length=200)
