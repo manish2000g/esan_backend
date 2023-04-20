@@ -31,27 +31,24 @@ def CreateUserProfile(request):
     last_name = request.POST['last_name']
     email = request.POST['email']
     password = request.POST['password']
-    is_player = request.POST.get('is_player', "False") == "True"
-    is_blog_writer = request.POST.get('is_blog_writer', "False") == "True"
-    is_organizer = request.POST.get('is_organizer', "False") == "True"
-    is_organization = request.POST.get('is_organization', "False") == "True"
+    user_type = request.POST.get('user_type', "is_player")
 
-    if is_player:
+    if user_type=="is_player":
         user = UserProfile.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name, role='player')
         player = Player.objects.create(user=user)
         player.save()
 
-    elif is_blog_writer:
+    elif user_type=="is_blog_writer":
         user = UserProfile.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name, role='blog_writer')
         blog_writer = BlogWriter.objects.create(user=user)
         blog_writer.save()
 
-    elif is_organizer:
+    elif user_type=="is_organizer":
         user = UserProfile.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name, role='organizer')
         organizer = Organizer.objects.create(user=user)
         organizer.save()
 
-    elif is_organization:
+    elif user_type=="is_organization":
         user = UserProfile.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name, role='organization')
         organization_name = request.POST['organization_name']
         organization = Organization.objects.create(user=user, organization_name=organization_name)

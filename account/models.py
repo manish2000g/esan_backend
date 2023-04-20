@@ -44,7 +44,7 @@ class Organizer(models.Model):
 
 class Organization(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    organization_name = models.CharField(max_length=255)
+    organization_name = models.CharField(max_length=255,unique=True)
     logo = models.ImageField(upload_to='media/images/organization_logos/',blank=True)
     description = models.TextField(max_length=500,blank=True)
     website = models.URLField(max_length=200,blank=True)
