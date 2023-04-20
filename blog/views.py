@@ -21,7 +21,6 @@ def CreateArticle(request):
     time_to_read = request.POST.get('time_to_read')
     is_featured = request.POST.get('is_featured')
     is_popular = request.POST.get('is_popular')
-    is_verified = request.POST.get('is_verified')
     is_published = request.POST.get('is_published')
     meta_title = request.POST.get('meta_title')
     meta_description = request.POST.get('meta_description')
@@ -40,7 +39,6 @@ def CreateArticle(request):
         time_to_read=time_to_read,
         is_featured=is_featured,
         is_popular=is_popular,
-        is_verified=is_verified,
         is_published =is_published, 
         meta_title=meta_title,
         meta_description=meta_description

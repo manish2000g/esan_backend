@@ -10,11 +10,10 @@ class ArticleAdmin(admin.ModelAdmin):
         "__str__",
         "is_featured",
         "is_popular",
-        "is_verified",
         "is_published",
         "updated_at",
     )
-    list_filter = ("updated_at", "is_popular", "is_verified","is_popular","is_featured")
+    list_filter = ("updated_at", "is_popular","is_popular","is_featured")
 
 
 admin.site.register(Article, ArticleAdmin)

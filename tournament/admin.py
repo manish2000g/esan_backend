@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from tournament.models import BannerImage, DuelMatch, FFAMatch, FFAScore, Result, Game, PrizePool, Registration, Tournament, Announcement, LivePage, Sponsor, Post, Participant, Match, TournamentBracket
+from tournament.models import BannerImage, DuelMatch, FFAMatch, FFAScore, Result, Game, PrizePool, Registration, Schedule, Tournament, Announcement, LivePage, Sponsor, Post, Participant, Match, TournamentBracket
 
 # Register your models here.
 class SponsorInline(admin.StackedInline):
@@ -12,6 +12,9 @@ class BannerImageInline(admin.StackedInline):
 class PrizeInline(admin.StackedInline):
     model = PrizePool
 
+class ScheduleInline(admin.StackedInline):
+    model = Schedule
+    
 class MatchInline(admin.StackedInline):
     model = Match
 
@@ -42,12 +45,17 @@ class GameAdmin(admin.ModelAdmin):
     inlines = [MatchInline]
 
 class TournamentAdmin(admin.ModelAdmin):
-    inlines = [SponsorInline, BannerImageInline, PrizeInline]
+    inlines = [SponsorInline, BannerImageInline, ScheduleInline, PrizeInline]
     list_display = ('name', 'start_date', 'end_date', 'organizer')
     search_fields = ('name', 'description', 'organizer__name')
     list_filter = ('start_date', 'end_date')
     date_hierarchy = 'start_date'
+class ScheduleAdmin(admin.ModelAdmin):
+    list_display = ('tournament', 'match', 'start_time', 'end_time')
+    list_filter = ('tournament',)
+    search_fields = ('tournament__name', 'match__player_1__name', 'match__player_2__name')
 
+admin.site.register(Schedule, ScheduleAdmin)
 admin.site.register(Tournament, TournamentAdmin)
 admin.site.register(Registration)
 admin.site.register(Match, MatchAdmin)

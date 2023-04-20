@@ -143,13 +143,26 @@ class TournamentBracket(models.Model):
     matches = models.ManyToManyField(Match, related_name='brackets')
     winner = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True, related_name='won_brackets')
     loser = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True, related_name='lost_brackets')
-
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    duration = models.DurationField(null=True, blank=True)
+    num_teams = models.PositiveSmallIntegerField(null=True, blank=True)
+    is_complete = models.BooleanField(default=False)
+    
     class Meta:
         ordering = ['round']
 
     def __str__(self):
         return f'{self.name} Bracket for {self.tournament}'
-    
+
+class Schedule(models.Model):
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='schedule')
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='schedule')
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True, blank=True)
+    venue = models.CharField(max_length=50)
+    city = models.CharField(max_length=50)
+    country = models.CharField(max_length=50)
     
 class Result(models.Model):
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name="results")
@@ -189,6 +202,7 @@ class Sponsor(models.Model):
     tournament = models.ForeignKey(Tournament,on_delete=models.CASCADE, related_name='sponsor')
     def __str__(self):
         return self.name
+    
 
 class LivePage(models.Model):
     tournament = models.OneToOneField(Tournament, on_delete=models.CASCADE)
