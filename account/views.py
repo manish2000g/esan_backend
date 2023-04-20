@@ -78,7 +78,7 @@ def CreateUserProfile(request):
 @api_view(['GET'])
 def GetUserProfile(request):
     user = request.user
-    token, created = Token.objects.get_or_create(user=user)
+    token, created = Token.objects.get_or_create(user=user.id)
 
     return Response({
         "token": token.key,
