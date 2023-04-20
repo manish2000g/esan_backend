@@ -18,7 +18,7 @@ ALLOWED_HOSTS = ['*']
 
 
 # Application definition
-CSRF_TRUSTED_ORIGINS =['https://api.esportix.com']
+CSRF_TRUSTED_ORIGINS =['https://esan.hikingbees.com']
 
 INSTALLED_APPS = [
     'jazzmin',
