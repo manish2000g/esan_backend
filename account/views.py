@@ -38,42 +38,23 @@ def CreateUserProfile(request):
 
     if is_player:
         user = UserProfile.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name, role='player')
-        name = request.POST['name']
-        country = request.POST['country']
-        phone_number = request.POST['phone_number']
-        profile_picture = request.FILES.get('profile_picture', None)
-        player = Player.objects.create(user=user, name=name, country=country, phone_number=phone_number, profile_picture=profile_picture)
+        player = Player.objects.create(user=user)
         player.save()
 
     elif is_blog_writer:
         user = UserProfile.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name, role='blog_writer')
-        name = request.POST['name']
-        bio = request.POST['bio']
-        website = request.POST['website']
-        email = request.POST['email']
-        profile_picture = request.FILES.get('profile_picture', None)
-        blog_writer = BlogWriter.objects.create(user=user, name=name, bio=bio, website=website, email=email, profile_picture=profile_picture)
+        blog_writer = BlogWriter.objects.create(user=user)
         blog_writer.save()
 
     elif is_organizer:
         user = UserProfile.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name, role='organizer')
-        name = request.POST['name']
-        description = request.POST['description']
-        website = request.POST['website']
-        email = request.POST['email']
-        logo = request.FILES.get('logo', None)
-        organizer = Organizer.objects.create(user=user, name=name, description=description, website=website, email=email, logo=logo)
+        organizer = Organizer.objects.create(user=user)
         organizer.save()
 
     elif is_organization:
         user = UserProfile.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name, role='organization')
         organization_name = request.POST['organization_name']
-        description = request.POST['description']
-        website = request.POST['website']
-        email = request.POST['email']
-        address = request.POST['address']
-        logo = request.FILES.get('logo', None)
-        organization = Organization.objects.create(user=user, organization_name=organization_name, description=description, website=website, email=email, address=address, logo=logo)
+        organization = Organization.objects.create(user=user, organization_name=organization_name)
         organization.save()
 
     token, created = Token.objects.get_or_create(user=user)
