@@ -1,11 +1,16 @@
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import api_view
 from .models import BlogWriter, Game, Organization, Organizer, Player, UserProfile, Team
 from rest_framework import status
 from .serializers import GameSerializer, TeamSerializer
-
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+)
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
@@ -54,6 +59,25 @@ def CreateUserProfile(request):
         organization_name = request.POST['organization_name']
         organization = Organization.objects.create(user=user, organization_name=organization_name)
         organization.save()
+
+    token, created = Token.objects.get_or_create(user=user)
+
+    return Response({
+        "token": token.key,
+        "user":{
+            'user': user.id,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'role': user.role
+        }
+    })
+
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+def GetUserProfile(request):
+    user = UserProfile.objects.get(id=request.user.id)
 
     token, created = Token.objects.get_or_create(user=user)
 
