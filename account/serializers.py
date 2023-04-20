@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Player, BlogWriter, Organization, Organizer
+from .models import Game, Player, BlogWriter, Organization, Organizer, Team
 
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,4 +19,14 @@ class OrganizerSerializer(serializers.ModelSerializer):
 class OrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
+        fields = '__all__'
+
+class GameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Game
+        fields = ['id', 'name']
+
+class TeamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Team
         fields = '__all__'
