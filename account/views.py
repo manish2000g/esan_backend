@@ -15,15 +15,16 @@ class CustomAuthToken(ObtainAuthToken):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
         token, created = Token.objects.get_or_create(user=user)
-        return Response(
-            {
-                "token": token.key,
-                'user_id': user.id,
+        return Response({
+            "token": token.key,
+            "user":{
+                'user': user.id,
                 'email': user.email,
                 'first_name': user.first_name,
-                'last_name': user.last_name
+                'last_name': user.last_name,
+                'role': user.role
             }
-        )
+        })
 
 @api_view(['POST'])
 def CreateUserProfile(request):
@@ -57,12 +58,14 @@ def CreateUserProfile(request):
     token, created = Token.objects.get_or_create(user=user)
 
     return Response({
-        'token': token.key,
-        'user_id': user.id,
-        'email': user.email,
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'role': user.role
+        "token": token.key,
+        "user":{
+            'user': user.id,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'role': user.role
+        }
     })
 
 @api_view(['GET', 'POST'])
