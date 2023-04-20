@@ -77,15 +77,10 @@ def CreateUserProfile(request):
 @permission_classes([IsAuthenticated])
 @api_view(['GET'])
 def GetUserProfile(request):
-    """ user = UserProfile.objects.get(id=request.user.id)
-    token, created = Token.objects.get_or_create(user=user) """
+    user = request.user
+    token, created = Token.objects.get_or_create(user=user)
 
     return Response({
-        "user":{
-            'user': request.user,
-        }
-    })
-    """ return Response({
         "token": token.key,
         "user":{
             'user': user.id,
@@ -94,7 +89,7 @@ def GetUserProfile(request):
             'last_name': user.last_name,
             'role': user.role
         }
-    }) """
+    })
 
 @api_view(['GET', 'POST'])
 def team_list(request):
