@@ -18,7 +18,8 @@ ALLOWED_HOSTS = ['*']
 
 
 # Application definition
-CSRF_TRUSTED_ORIGINS =['*']
+CSRF_TRUSTED_ORIGINS =['https://api.esportix.com']
+
 INSTALLED_APPS = [
     'jazzmin',
     'django.contrib.admin',
