@@ -75,7 +75,7 @@ def CreateUserProfile(request):
 
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@api_view(['POST'])
+@api_view(['GET'])
 def GetUserProfile(request):
     user = UserProfile.objects.get(id=request.user.id)
 
