@@ -2,12 +2,17 @@ from rest_framework import serializers
 from .models import  Article, Comment, Tag
 
 class ArticleSerializer(serializers.ModelSerializer):
+    c_name = serializers.StringRelatedField(many=True)
+    tags = serializers.StringRelatedField(many=True)
     class Meta:
         model = Article
         fields = '__all__'
         ordering = ['-created_at']
 
 class ArticleDetailSerializer(serializers.ModelSerializer):
+    c_name = serializers.StringRelatedField(many=True)
+    tags = serializers.StringRelatedField(many=True)
+
     class Meta:
         model = Article
         fields = '__all__'

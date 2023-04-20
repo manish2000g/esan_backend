@@ -2,8 +2,10 @@ from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
-from django.contrib.auth.models import User
-from .models import BlogWriter, Organization, Organizer, Player, UserProfile
+from .models import BlogWriter, Game, Organization, Organizer, Player, UserProfile, Team
+from rest_framework import status
+from .serializers import GameSerializer, TeamSerializer
+
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
@@ -84,5 +86,54 @@ def CreateUserProfile(request):
         'last_name': user.last_name
     })
 
+@api_view(['GET', 'POST'])
+def team_list(request):
+    if request.method == 'GET':
+        teams = Team.objects.all()
+        serializer = TeamSerializer(teams, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = TeamSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def team_detail(request, pk):
+    try:
+        team = Team.objects.get(pk=pk)
+    except Team.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = TeamSerializer(team)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = TeamSerializer(team, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        team.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['GET', 'POST'])
+def game_list(request):
+    if request.method == 'GET':
+        games = Game.objects.all()
+        serializer = GameSerializer(games, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = GameSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
 
 
