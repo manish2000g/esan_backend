@@ -82,7 +82,7 @@ def GetUserProfile(request):
 
     return Response({
         "user":{
-            'user': request.user.id,
+            'user': request.user,
         }
     })
     """ return Response({
