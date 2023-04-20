@@ -18,7 +18,7 @@ ALLOWED_HOSTS = ['*']
 
 
 # Application definition
-CSRF_TRUSTED_ORIGINS =['https://4258-103-163-182-17.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS =['*']
 INSTALLED_APPS = [
     'jazzmin',
     'django.contrib.admin',
