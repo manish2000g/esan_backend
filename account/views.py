@@ -7,7 +7,6 @@ from .serializers import GameSerializer, TeamSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import (
     api_view,
-    authentication_classes,
     permission_classes,
 )
 
@@ -59,18 +58,10 @@ def CreateUserProfile(request):
         organization = Organization.objects.create(user=user, organization_name=organization_name)
         organization.save()
 
-    token, created = Token.objects.get_or_create(user=user)
-
     return Response({
-        "token": token.key,
-        "user":{
-            'user': user.id,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'role': user.role
-        }
-    })
+        "success":"User Created Sucessfully"
+    },status=status.HTTP_201_CREATED)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
