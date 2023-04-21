@@ -4,7 +4,6 @@ from rest_framework.authtoken.models import Token
 from .models import BlogWriter, Game, Organization, Organizer, Player, UserProfile, Team
 from rest_framework import status
 from .serializers import GameSerializer, TeamSerializer
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import (
     api_view,
@@ -73,15 +72,11 @@ def CreateUserProfile(request):
         }
     })
 
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def GetUserProfile(request):
     user = request.user
-    token, created = Token.objects.get_or_create(user=user.id)
-
     return Response({
-        "token": token.key,
         "user":{
             'user': user.id,
             'email': user.email,

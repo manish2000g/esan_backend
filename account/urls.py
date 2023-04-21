@@ -1,9 +1,17 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
+
 
 urlpatterns = [
-     path("api-token-auth/",views.CustomAuthToken.as_view(), name="login_api_token_auth"),
+     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
      path("create-user-profile/",views.CreateUserProfile, name="create_user_profile"),
      path("get-user-profile/",views.GetUserProfile, name="get_user_profile"),
      path('teams/', views.team_list),
