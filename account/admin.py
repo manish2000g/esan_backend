@@ -8,9 +8,6 @@ class TeamInline(admin.StackedInline):
 class OrganizationAdmin(admin.ModelAdmin):
     inlines = [TeamInline]
 
-class PlayerAdmin(admin.ModelAdmin):
-    list_display = ('name', 'country', 'phone_number')
-
 admin.site.register(Player)
 admin.site.register(UserProfile)
 admin.site.register(BlogWriter)
