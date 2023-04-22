@@ -17,12 +17,12 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         response = super().post(request, *args, **kwargs)
 
         # Get the user from the request
-        user = self.user
+        user = request.user
 
         # Add custom fields to the response
-        response.data['email'] = self.user.email
-        response.data['username'] = self.user.username
-        response.data['role'] = self.user.role
+        response.data['email'] = user.email
+        response.data['username'] = user.username
+        response.data['role'] = user.role
 
         return response
 class CustomAuthToken(ObtainAuthToken):
