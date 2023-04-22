@@ -9,7 +9,22 @@ from rest_framework.decorators import (
     api_view,
     permission_classes,
 )
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.response import Response
 
+class CustomTokenObtainPairView(TokenObtainPairView):
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+
+        # Get the user from the request
+        user = self.user
+
+        # Add custom fields to the response
+        response.data['email'] = self.user.email
+        response.data['username'] = self.user.username
+        response.data['role'] = self.user.role
+
+        return response
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(
