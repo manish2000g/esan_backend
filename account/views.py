@@ -17,7 +17,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         response = super().post(request, *args, **kwargs)
 
         # Get the user from the request
-        user = request.user
+        user = self.user
 
         # Add custom fields to the response
         response.data['email'] = user.email
