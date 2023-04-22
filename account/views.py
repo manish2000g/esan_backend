@@ -11,29 +11,7 @@ from rest_framework.decorators import (
 )
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
-from django.contrib.auth import authenticate
 
-class CustomTokenObtainPairView(TokenObtainPairView):
-    def post(self, request, *args, **kwargs):
-        email_or_username = request.data.get('email_or_username')
-        password = request.data.get('password')
-        
-        # Authenticate the user based on email or username and password
-        user = authenticate(request=request, username=email_or_username, password=password)
-        
-        if user is not None:
-            # Set the user attribute on the view
-            self.user = user
-            response = super().post(request, *args, **kwargs)
-
-            # Add custom fields to the response
-            response.data['email'] = user.email
-            response.data['username'] = user.username
-            response.data['role'] = user.role
-
-            return response
-        else:
-            return Response({'error': 'Invalid credentials'})
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(
