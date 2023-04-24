@@ -16,11 +16,17 @@ class Tag(models.Model):
         return self.tag_name
 
 class Article(models.Model):
+    TYPE_CHOICES = [
+        ("Blog","Blog"),
+        ("News","News"),
+        ("Events","Events"),
+    ]
     slug = models.SlugField(unique=True)
     thumbnail_image = models.ImageField(upload_to='static/images')
     thumbnail_image_alt_description = models.CharField(max_length=300)
     title = models.CharField(max_length=300)
     article_content = RichTextField(max_length=500) 
+    article_type = models.CharField(max_length=500,choices=TYPE_CHOICES,default="Blog")
     c_name = models.ManyToManyField(ArticleCategory, help_text='Article Category',related_name="categories")
     author = models.ForeignKey(BlogWriter,on_delete=models.DO_NOTHING,related_name="author")
     tags = models.ManyToManyField(Tag,related_name="tags")
