@@ -1,13 +1,59 @@
 from django.shortcuts import render
 from rest_framework.response import Response
-from .seralizers import ArticleSerializer, CommentSerializer, TagSerializer
-from .models import Article, Comment, Tag
+from .seralizers import ArticleCategorySerializer, ArticleSerializer, CommentSerializer, TagSerializer
+from .models import Article, ArticleCategory, Comment, Tag
 from account.models import BlogWriter
 from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404
 
 
+@api_view(['POST'])
+def Create_Article_Category(request):
+    c_name = request.data.get('c_name')
+    description = request.data.get('description')
+    image = request.FILES.get('image')
+    # Create a new ArticleCategory instance
+    category = ArticleCategory(
+        c_name=c_name,
+        description=description,
+        image=image
+    )
+    category.save()
 
+    return Response({'success': "Successfully created Article Category"})
+
+@api_view(['PUT'])
+def Update_Article_Category(request, category_id):
+    category = get_object_or_404(ArticleCategory, id=category_id)
+    c_name = request.data.get('c_name')
+    description = request.data.get('description')
+    image = request.FILES.get('image')
+
+    category.c_name = c_name
+    category.description = description
+    image=image
+
+    category.save()
+
+    return Response({'success': "Successfully updated Article Category"})
+
+@api_view(['DELETE'])
+def Delete_Article_Category(request, category_id):
+    category = get_object_or_404(ArticleCategory, id=category_id)
+    category.delete()
+    return Response({'success': "Successfully deleted Article Category"})
+
+@api_view(['GET'])
+def Get_Article_Category(request):
+    category = ArticleCategory.objects.all()
+    category_serializers = ArticleCategorySerializer(category, many=True)
+    return Response(category_serializers.data)
+
+@api_view(['GET'])
+def Article_Category_Detail(request, slug):
+    article_category = ArticleCategory.objects.get(slug=slug)
+    serializer = ArticleCategorySerializer(article_category)
+    return Response(serializer.data)
 
 def CreateArticle(request):
     # Extract the data sent from JavaScript
@@ -90,7 +136,6 @@ def UpdateArticle(request, article_id):
     time_to_read = request.POST.get('time_to_read')
     is_featured = request.POST.get('is_featured')
     is_popular = request.POST.get('is_popular')
-    is_verified = request.POST.get('is_verified')
     is_published = request.POST.get('is_published')
     meta_title = request.POST.get('meta_title')
     meta_description = request.POST.get('meta_description')
@@ -108,7 +153,6 @@ def UpdateArticle(request, article_id):
     article.time_to_read = time_to_read
     article.is_featured = is_featured
     article.is_popular = is_popular
-    article.is_verified = is_verified
     article.is_published= is_published
     article.meta_title = meta_title
     article.meta_description = meta_description
@@ -120,7 +164,6 @@ def UpdateArticle(request, article_id):
         article.tags.add(tag)
 
     article.save()
-
     return Response({'success': "Sucessfully Updated Article"})
 
 def DeleteArticle(request, article_id):
@@ -148,15 +191,6 @@ def RetriveArticles(request):
         "tag" : tag_serializers.data
     })
 
-# @api_view(['GET'])
-# def ArticleDetail(request, slug):
-#     try:
-#         article_detail = Article.objects.get(slug=slug)
-#         article_detail_serializer = ArticleSerializer(article_detail)
-#         return Response(article_detail_serializer.data)
-#     except:
-#         return Response(status=status.HTTP_404_NOT_FOUND)
-
 @api_view(['GET'])
 def Article_Detail(request, slug):
     article = Article.objects.get(slug=slug)
@@ -177,3 +211,40 @@ def PopularArticles(request):
     popular_articles = Article.objects.filter(is_popular=True).order_by('-created_at')[:5]
     popular_articles_data = [ArticleSerializer(article).data for article in popular_articles]
     return Response(popular_articles_data)
+
+@api_view(['POST'])
+def Create_Tag(request):
+    tag_name = request.data.get('tag_name')
+    # Create a new tag instance
+    tag = Tag(
+        tag_name=tag_name,
+        
+    )
+    tag.save()
+
+    return Response({'success': "Successfully created Tag"})
+
+@api_view(['GET'])
+def Get_Tag(request):
+    tag = Tag.objects.all()
+    serializers = TagSerializer(tag, many=True)
+    return Response(serializers.data)
+
+@api_view(['PUT'])
+def Update_Tag(request, tag_id):
+    tag = get_object_or_404(Tag, id=tag_id)
+    tag_name = request.data.get('tag_name')
+    
+    tag.tag_name = tag_name
+
+    tag.save()
+    return Response({'success': "Successfully updated Tag"})
+
+def Delete_Tag(request, tag_id):
+    # Retrieve the article to be deleted
+    tag = get_object_or_404(Tag, id=tag_id)
+
+    # Delete the article
+    tag.delete()
+
+    return Response({'success': "Sucessfully Deleted Tag"})

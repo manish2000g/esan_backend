@@ -1,7 +1,6 @@
 
-from account.models import Organizer
 from rest_framework import serializers
-from .models import BannerImage, Match, PrizePool, Result, Sponsor, Tournament, Post, Registration, Participant, LivePage, Announcement, TournamentBracket
+from .models import BannerImage, Match, PrizePool, Result, Sponsor, Team, Tournament, Registration, Participant, LivePage, Announcement, TournamentBracket
 from account.serializers import OrganizationSerializer, OrganizerSerializer, PlayerSerializer
 
 class SponsorSerializer(serializers.ModelSerializer):
@@ -26,9 +25,9 @@ class TournamentSerializer(serializers.ModelSerializer):
     #     tournament.sponsors.set(sponsors)
     #     return tournament
 
-class PostSerializer(serializers.ModelSerializer):
+class TeamSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Post
+        model = Team
         fields = '__all__'
 
 class RegistrationSerializer(serializers.ModelSerializer):

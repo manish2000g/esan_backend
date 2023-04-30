@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from .models import  Article, Comment, Tag
+from .models import  Article, ArticleCategory, Comment, Tag
+
+class ArticleCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ArticleCategory
+        fields = '__all__'
 
 class ArticleSerializer(serializers.ModelSerializer):
     c_name = serializers.StringRelatedField(many=True)
