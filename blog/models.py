@@ -4,8 +4,6 @@ from account.models import BlogWriter
     
 class ArticleCategory(models.Model):
     c_name = models.CharField(max_length=50, help_text='Artcile Category Name')
-    description = models.CharField(max_length=200)
-
     def __str__(self):
         return self.c_name
 
