@@ -1,9 +1,9 @@
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from .models import BlogWriter, Game, Organization, Organizer, Player, UserProfile, Team
+from .models import BlogWriter, Game, Organization, Organizer, Player, UserProfile
 from rest_framework import status
-from .serializers import GameSerializer, TeamSerializer
+from .serializers import GameSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import (
     api_view,
@@ -28,7 +28,7 @@ class CustomAuthToken(ObtainAuthToken):
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'role': user.role
-            }
+            }   
         })
 
 @api_view(['POST'])
@@ -41,7 +41,7 @@ def CreateUserProfile(request):
 
     if user_type=="is_player":
         user = UserProfile.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name, role='player')
-        player = Player.objects.create(user=user)
+        player = Player.objects.create(user=user)   
         player.save()
 
     elif user_type=="is_blog_writer":
@@ -69,51 +69,67 @@ def CreateUserProfile(request):
 @permission_classes([IsAuthenticated])
 def GetUserProfile(request):
     user = request.user
-    return Response({
-        "user":{
-            'user': user.id,
+    data = {
+        'user': {
+            'id': user.id,
             'email': user.email,
             'first_name': user.first_name,
             'last_name': user.last_name,
             'role': user.role
         }
-    })
+    }
 
-@api_view(['GET', 'POST'])
-def team_list(request):
-    if request.method == 'GET':
-        teams = Team.objects.all()
-        serializer = TeamSerializer(teams, many=True)
-        return Response(serializer.data)
+    if user.role == 'player':
+        player = Player.objects.get(user=user)
+        data['player'] = {
+            'id': player.id,
+            'profile_picture': player.profile_picture.url if player.profile_picture else None,
+            'country': player.country,
+            'phone_number': player.phone_number
+        }
 
-    elif request.method == 'POST':
-        serializer = TeamSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif user.role == 'blog_writer':
+        blog_writer = BlogWriter.objects.get(user=user)
+        data['blog_writer'] = {
+            'id': blog_writer.id,
+            'bio': blog_writer.bio,
+            'profile_picture': blog_writer.profile_picture.url if blog_writer.profile_picture else None,
+            'website': blog_writer.website
+        }
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def team_detail(request, pk):
-    try:
-        team = Team.objects.get(pk=pk)
-    except Team.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+    elif user.role == 'organizer':
+        organizer = Organizer.objects.get(user=user)
+        data['organizer'] = {
+            'id': organizer.id,
+            'logo': organizer.logo.url if organizer.logo else None,
+            'description': organizer.description,
+            'website': organizer.website
+        }
 
-    if request.method == 'GET':
-        serializer = TeamSerializer(team)
-        return Response(serializer.data)
+    elif user.role == 'organization':
+        organization = Organization.objects.get(user=user)
+        data['organization'] = {
+            'id': organization.id,
+            'organization_name': organization.organization_name,
+            'logo': organization.logo.url if organization.logo else None,
+            'description': organization.description,
+            'website': organization.website,
+            'address': organization.address
+        }
 
-    elif request.method == 'PUT':
-        serializer = TeamSerializer(team, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(data)
 
-    elif request.method == 'DELETE':
-        team.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+# def GetUserProfile(request):
+#     user = request.user
+#     return Response({
+#         "user":{
+#             'user': user.id,
+#             'email': user.email,
+#             'first_name': user.first_name,
+#             'last_name': user.last_name,
+#             'role': user.role
+#         }
+#     })
 
 @api_view(['GET', 'POST'])
 def game_list(request):

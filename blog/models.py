@@ -4,6 +4,7 @@ from account.models import BlogWriter
     
 class ArticleCategory(models.Model):
     c_name = models.CharField(max_length=50, help_text='Artcile Category Name')
+    image = models.ImageField(upload_to='static/images')
     description = models.CharField(max_length=200)
 
     def __str__(self):
