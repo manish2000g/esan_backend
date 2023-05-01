@@ -11,12 +11,9 @@ from django.shortcuts import get_object_or_404
 def Create_Article_Category(request):
     c_name = request.data.get('c_name')
     description = request.data.get('description')
-    image = request.FILES.get('image')
     # Create a new ArticleCategory instance
     category = ArticleCategory(
         c_name=c_name,
-        description=description,
-        image=image
     )
     category.save()
 
@@ -26,13 +23,7 @@ def Create_Article_Category(request):
 def Update_Article_Category(request, category_id):
     category = get_object_or_404(ArticleCategory, id=category_id)
     c_name = request.data.get('c_name')
-    description = request.data.get('description')
-    image = request.FILES.get('image')
-
     category.c_name = c_name
-    category.description = description
-    image=image
-
     category.save()
 
     return Response({'success': "Successfully updated Article Category"})
