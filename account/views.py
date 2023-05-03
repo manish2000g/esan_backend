@@ -40,6 +40,18 @@ def CreateUserProfile(request):
     username = request.POST['username']
     user_type = request.POST.get('user_type', "is_player")
 
+    # Check if email already exists
+    if UserProfile.objects.filter(email=email).exists():
+        return Response({'detail': 'Email address already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Check if username already exists
+    if UserProfile.objects.filter(username=username).exists():
+        return Response({'detail': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Check if all required fields are present
+    if not all([first_name, last_name, email, password, username, user_type]):
+        return Response({'detail': 'All required fields are not present'}, status=status.HTTP_400_BAD_REQUEST)
+
     if user_type=="is_player":
         user = UserProfile.objects.create_user(username=username, email=email, password=password, first_name=first_name, last_name=last_name, role='Player')
         player = Player.objects.create(user=user)   
