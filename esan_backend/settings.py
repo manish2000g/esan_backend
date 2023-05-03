@@ -215,3 +215,11 @@ SIMPLE_JWT = {
 
 
 AUTH_USER_MODEL = 'account.UserProfile'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp-relay.sendinblue.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = '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'
+EMAIL_HOST_PASSWORD = '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'
+DEFAULT_FROM_EMAIL = 'vishaldhakal9696@gmail.com'

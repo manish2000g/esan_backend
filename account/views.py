@@ -11,6 +11,7 @@ from rest_framework.decorators import (
 )
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
+from django.core.mail import send_mail
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
@@ -31,6 +32,14 @@ class CustomAuthToken(ObtainAuthToken):
             }   
         })
 
+@api_view(['POST'])
+def VerifyUserProfile(request):
+    userid = request.GET.get("user")
+    userpr = UserProfile.objects.get(id=userid)
+    userpr.is_verified = True
+    userpr.save()
+    return Response({"detail":"Verified Sucessfully"})
+ 
 @api_view(['POST'])
 def CreateUserProfile(request):
     first_name = request.POST['first_name']
@@ -73,6 +82,15 @@ def CreateUserProfile(request):
         organization = Organization.objects.create(user=user, organization_name=organization_name)
         organization.save()
 
+    message = f'Hello,\n\nThank you for signing up for ESAN! To get started, please click on the following link to verify your account : https://esan.hikingbees.com/verify-user-profile/?user={user.id} \n\nBest regards,\nESAN'
+
+    send_mail(
+        'Verify Your ESAN Account',
+        message,
+        'vishaldhakal9696@gmail.com',
+        [email],
+        fail_silently=False,
+    )
     return Response({
         "success":"User Created Sucessfully"
     },status=status.HTTP_201_CREATED)
