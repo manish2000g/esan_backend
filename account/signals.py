@@ -17,10 +17,5 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 @receiver(pre_delete, sender=Organizer)
 @receiver(pre_delete, sender=Organization)
 def delete_profile_picture(sender, instance, **kwargs):
-    """
-    Deletes profile picture file(s) of a Player, BlogWriter, Organizer or Organization instance
-    when that instance is deleted.
-    """
-    # Check if instance has a profile_picture field and if the file exists
     if hasattr(instance, 'profile_picture') and instance.profile_picture:
         instance.profile_picture.delete(False)

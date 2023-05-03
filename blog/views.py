@@ -1,19 +1,27 @@
 from django.shortcuts import render
 from rest_framework.response import Response
-from .seralizers import ArticleCategorySerializer, ArticleSerializer, CommentSerializer, TagSerializer
+from .seralizers import ArticleCategorySerializer, ArticleSerializer, CommentSerializer, TagSerializer,ArticleDetailSerializer
 from .models import Article, ArticleCategory, Comment, Tag
 from account.models import BlogWriter
-from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import (
+    api_view,
+    permission_classes,
+)
 from django.shortcuts import get_object_or_404
+from account.models import UserProfile
+from django.db.models import Q
+from rest_framework import status
+
 
 
 @api_view(['POST'])
 def Create_Article_Category(request):
-    c_name = request.data.get('c_name')
+    category_name = request.data.get('category_name')
     description = request.data.get('description')
     # Create a new ArticleCategory instance
     category = ArticleCategory(
-        c_name=c_name,
+        category_name=category_name,
     )
     category.save()
 
@@ -22,8 +30,8 @@ def Create_Article_Category(request):
 @api_view(['PUT'])
 def Update_Article_Category(request, category_id):
     category = get_object_or_404(ArticleCategory, id=category_id)
-    c_name = request.data.get('c_name')
-    category.c_name = c_name
+    category_name = request.data.get('category_name')
+    category.category_name = category_name
     category.save()
 
     return Response({'success': "Successfully updated Article Category"})
@@ -35,10 +43,12 @@ def Delete_Article_Category(request, category_id):
     return Response({'success': "Successfully deleted Article Category"})
 
 @api_view(['GET'])
-def Get_Article_Category(request):
+def Get_Category_Tag(request):
     category = ArticleCategory.objects.all()
     category_serializers = ArticleCategorySerializer(category, many=True)
-    return Response(category_serializers.data)
+    tag = Tag.objects.all()
+    tag_serializers = TagSerializer(tag, many=True)
+    return Response({"categories":category_serializers.data,"tags":tag_serializers.data})
 
 @api_view(['GET'])
 def Article_Category_Detail(request, slug):
@@ -46,24 +56,24 @@ def Article_Category_Detail(request, slug):
     serializer = ArticleCategorySerializer(article_category)
     return Response(serializer.data)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def CreateArticle(request):
-    # Extract the data sent from JavaScript
     slug = request.POST.get('slug')
     thumbnail_image = request.FILES.get('thumbnail_image')
     thumbnail_image_alt_description = request.POST.get('thumbnail_image_alt_description')
     title = request.POST.get('title')
     article_content = request.POST.get('article_content')
-    author_id = request.POST.get('author_id')
+    author_id = request.user.id
     tags = request.POST.getlist('tags')
-    time_to_read = request.POST.get('time_to_read')
-    is_featured = request.POST.get('is_featured')
-    is_popular = request.POST.get('is_popular')
-    is_published = request.POST.get('is_published')
+    categories = request.POST.getlist('categories')
+    is_featured = request.POST.get('is_featured',"False")=="True"
+    is_published = request.POST.get('is_published',"False")=="True"
     meta_title = request.POST.get('meta_title')
     meta_description = request.POST.get('meta_description')
 
     # Retrieve the author instance
-    author = get_object_or_404(BlogWriter, id=author_id)
+    author = get_object_or_404(UserProfile, id=author_id)
 
     # Create a new article instance
     article = Article(
@@ -73,19 +83,38 @@ def CreateArticle(request):
         title=title,
         article_content=article_content,
         author=author,
-        time_to_read=time_to_read,
         is_featured=is_featured,
-        is_popular=is_popular,
         is_published =is_published, 
         meta_title=meta_title,
         meta_description=meta_description
     )
     article.save()
+    print(thumbnail_image)
 
-    # Add tags to the article
-    for tag_id in tags:
-        tag = Tag.objects.get(id=tag_id)
-        article.tags.add(tag)
+    # Retrieve all existing tags
+    existing_tags = Tag.objects.filter(Q(tag_name__in=tags))
+
+    # Create new tags for any missing tags
+    missing_tags = set(tags) - set(existing_tags.values_list('tag_name', flat=True))
+    new_tags = [Tag(tag_name=tag_name) for tag_name in missing_tags]
+    Tag.objects.bulk_create(new_tags)
+
+    # Add all tags (existing and new) to the article
+    tags_to_add = existing_tags.union(Tag.objects.filter(Q(tag_name__in=missing_tags)))
+    article.tags.add(*tags_to_add)
+
+    # Retrieve all existing categories
+    existing_categories = ArticleCategory.objects.filter(Q(category_name__in=categories))
+
+    # Create new categories for any missing categories
+    missing_categories = set(categories) - set(existing_categories.values_list('category_name', flat=True))
+    new_categories = [ArticleCategory(category_name=category_name) for category_name in missing_categories]
+    ArticleCategory.objects.bulk_create(new_categories)
+
+    # Add all categories (existing and new) to the article
+    categories_to_add = existing_categories.union(ArticleCategory.objects.filter(Q(category_name__in=missing_categories)))
+    article.categories.add(*categories_to_add)
+    
 
     return Response({'success': "Sucessfully Uploaded Article"})
 
@@ -112,83 +141,102 @@ def create_comment(request):
 
 
 
-def UpdateArticle(request, article_id):
-    # Retrieve the article to be updated
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def UpdateArticle(request):
+    # Retrieve the article instance
+    article_id = int(request.POST.get('id'))
     article = get_object_or_404(Article, id=article_id)
 
-    # Extract the data sent from JavaScript
-    slug = request.POST.get('slug')
-    thumbnail_image = request.FILES.get('thumbnail_image')
-    thumbnail_image_alt_description = request.POST.get('thumbnail_image_alt_description')
-    title = request.POST.get('title')
-    article_content = request.POST.get('article_content')
-    author_id = request.POST.get('author_id')
-    tags = request.POST.getlist('tags')
-    time_to_read = request.POST.get('time_to_read')
-    is_featured = request.POST.get('is_featured')
-    is_popular = request.POST.get('is_popular')
-    is_published = request.POST.get('is_published')
-    meta_title = request.POST.get('meta_title')
-    meta_description = request.POST.get('meta_description')
-
-    # Retrieve the author instance
-    author = get_object_or_404(BlogWriter, id=author_id)
+    # Check if the requesting user is the author of the article
+    if request.user != article.author:
+        return Response({'error': 'You do not have permission to update this article.'}, status=status.HTTP_403_FORBIDDEN)
 
     # Update the article fields
-    article.slug = slug
-    article.thumbnail_image = thumbnail_image
-    article.thumbnail_image_alt_description = thumbnail_image_alt_description
-    article.title = title
-    article.article_content = article_content
-    article.author = author
-    article.time_to_read = time_to_read
-    article.is_featured = is_featured
-    article.is_popular = is_popular
-    article.is_published= is_published
-    article.meta_title = meta_title
-    article.meta_description = meta_description
-    article.tags.clear()  # Clear existing tags
+    article.slug = request.POST.get('slug', article.slug)
+    article.thumbnail_image = request.FILES.get('thumbnail_image', article.thumbnail_image)
+    article.thumbnail_image_alt_description = request.POST.get('thumbnail_image_alt_description', article.thumbnail_image_alt_description)
+    article.title = request.POST.get('title', article.title)
+    article.article_content = request.POST.get('article_content', article.article_content)
+    article.is_featured = request.POST.get('is_featured', article.is_featured)
+    article.is_published = request.POST.get('is_published', article.is_published)
+    article.meta_title = request.POST.get('meta_title', article.meta_title)
+    article.meta_description = request.POST.get('meta_description', article.meta_description)
 
-    # Add tags to the article
-    for tag_id in tags:
-        tag = Tag.objects.get(id=tag_id)
-        article.tags.add(tag)
+    # Retrieve all existing tags
+    tags = request.POST.getlist('tags')
+    existing_tags = Tag.objects.filter(Q(tag_name__in=tags))
+
+    # Create new tags for any missing tags
+    missing_tags = set(tags) - set(existing_tags.values_list('tag_name', flat=True))
+    new_tags = [Tag(tag_name=tag_name) for tag_name in missing_tags]
+    Tag.objects.bulk_create(new_tags)
+
+    # Add all tags (existing and new) to the article
+    tags_to_add = existing_tags.union(Tag.objects.filter(Q(tag_name__in=missing_tags)))
+    article.tags.set(tags_to_add)
+
+    # Retrieve all existing categories
+    categories = request.POST.getlist('categories')
+    existing_categories = ArticleCategory.objects.filter(Q(category_name__in=categories))
+
+    # Create new categories for any missing categories
+    missing_categories = set(categories) - set(existing_categories.values_list('category_name', flat=True))
+    new_categories = [ArticleCategory(category_name=category_name) for category_name in missing_categories]
+    ArticleCategory.objects.bulk_create(new_categories)
+
+    # Add all categories (existing and new) to the article
+    categories_to_add = existing_categories.union(ArticleCategory.objects.filter(Q(category_name__in=missing_categories)))
+    article.categories.set(categories_to_add)
 
     article.save()
+
     return Response({'success': "Sucessfully Updated Article"})
 
-def DeleteArticle(request, article_id):
-    # Retrieve the article to be deleted
-    article = get_object_or_404(Article, id=article_id)
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def DeleteArticle(request):
+    article_slug = request.GET.get("slug")
+    article = get_object_or_404(Article, slug=article_slug)
 
-    # Delete the article
+    # Check if the requesting user is the author of the article
+    if request.user != article.author:
+        return Response({'error': 'You do not have permission to update this article.'}, status=status.HTTP_403_FORBIDDEN)
+    
     article.delete()
 
     return Response({'success': "Sucessfully Deleted Article"})
 
 @api_view(["GET"])
 def RetriveArticles(request):
-    featured_articles = Article.objects.filter(is_featured=True)
-    featured_articles_serializers = ArticleSerializer(featured_articles, many = True)
+    articles = Article.objects.all()
+    articles_serializers = ArticleSerializer(articles, many = True)
 
-    popoular_articles = Article.objects.filter(is_popular=True)
-    popoular_artcles_serializers = ArticleSerializer(popoular_articles, many = True)
-
-    tag = Tag.objects.all()
-    tag_serializers = TagSerializer(tag, many = True)
     return Response({
-        "featured_articles" : featured_articles_serializers.data,
-        "popular_articles" : popoular_artcles_serializers.data,
-        "tag" : tag_serializers.data
+        "posts" : articles_serializers.data,
+    })
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def RetriveArticlesAuthor(request):
+
+    user = request.user.id
+    user_profile = UserProfile.objects.get(id=user)
+    articles = Article.objects.filter(author=user_profile)
+    articles_serializers = ArticleSerializer(articles, many = True)
+
+    return Response({
+        "posts" : articles_serializers.data,
     })
 
 @api_view(['GET'])
-def Article_Detail(request, slug):
+def Article_Detail(request):
+    slug = request.GET.get("slug")
     article = Article.objects.get(slug=slug)
-    comments = Comment.objects.filter(article=article)
-    serializer = ArticleSerializer(article)
+    comments = Comment.objects.filter(article=article,parent_comment__isnull=True)
+    serializer = ArticleDetailSerializer(article)
     comments_serializer = CommentSerializer(comments, many=True)
-    return Response({'article': serializer.data, 'comments': comments_serializer.data})
+    return Response({'post': serializer.data, 'comments': comments_serializer.data})
 
 @api_view(['GET'])
 def FeaturedArticles(request):

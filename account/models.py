@@ -4,13 +4,22 @@ from django.conf import settings
 
 class UserProfile(AbstractUser):
     role_choices = (
-        ('player', 'Player'),
-        ('organization', 'Organization'),
-        ('organizer', 'Organizer'),
-        ('blog_writer', 'Blog Writer'),
-        ('admin', 'Admin'),
+        ('Player', 'Player'),
+        ('Organization', 'Organization'),
+        ('Organizer', 'Organizer'),
+        ('Blog Writer', 'Blog Writer'),
+        ('Admin', 'Admin'),
     )
+    
+    status_choices = (
+        ('Active', 'Active'),
+        ('Banned', 'Banned'),
+    )
+    
     role = models.CharField(max_length=15, choices=role_choices)
+    avatar = models.ImageField(blank=True)
+    status = models.CharField(max_length=15, choices=status_choices,default="Active")
+    is_verified = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return self.username

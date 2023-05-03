@@ -3,7 +3,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from .models import BlogWriter, Game, Organization, Organizer, Player, UserProfile
 from rest_framework import status
-from .serializers import GameSerializer
+from .serializers import GameSerializer,UserProfileSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import (
     api_view,
@@ -37,25 +37,26 @@ def CreateUserProfile(request):
     last_name = request.POST['last_name']
     email = request.POST['email']
     password = request.POST['password']
+    username = request.POST['username']
     user_type = request.POST.get('user_type', "is_player")
 
     if user_type=="is_player":
-        user = UserProfile.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name, role='player')
+        user = UserProfile.objects.create_user(username=username, email=email, password=password, first_name=first_name, last_name=last_name, role='Player')
         player = Player.objects.create(user=user)   
         player.save()
 
     elif user_type=="is_blog_writer":
-        user = UserProfile.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name, role='blog_writer')
+        user = UserProfile.objects.create_user(username=username, email=email, password=password, first_name=first_name, last_name=last_name, role='Blog Writer')
         blog_writer = BlogWriter.objects.create(user=user)
         blog_writer.save()
 
     elif user_type=="is_organizer":
-        user = UserProfile.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name, role='organizer')
+        user = UserProfile.objects.create_user(username=username, email=email, password=password, first_name=first_name, last_name=last_name, role='Organizer')
         organizer = Organizer.objects.create(user=user)
         organizer.save()
 
     elif user_type=="is_organization":
-        user = UserProfile.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name, role='organization')
+        user = UserProfile.objects.create_user(username=username, email=email, password=password, first_name=first_name, last_name=last_name, role='Organization')
         organization_name = request.POST['organization_name']
         organization = Organization.objects.create(user=user, organization_name=organization_name)
         organization.save()
@@ -69,67 +70,58 @@ def CreateUserProfile(request):
 @permission_classes([IsAuthenticated])
 def GetUserProfile(request):
     user = request.user
-    data = {
-        'user': {
-            'id': user.id,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'role': user.role
-        }
-    }
-
-    if user.role == 'player':
-        player = Player.objects.get(user=user)
-        data['player'] = {
-            'id': player.id,
-            'profile_picture': player.profile_picture.url if player.profile_picture else None,
-            'country': player.country,
-            'phone_number': player.phone_number
+    if user.is_verified:
+        data = {
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'role': user.role,
+            }
         }
 
-    elif user.role == 'blog_writer':
-        blog_writer = BlogWriter.objects.get(user=user)
-        data['blog_writer'] = {
-            'id': blog_writer.id,
-            'bio': blog_writer.bio,
-            'profile_picture': blog_writer.profile_picture.url if blog_writer.profile_picture else None,
-            'website': blog_writer.website
-        }
+        if user.role == 'Player':
+            player = Player.objects.get(user=user)
+            data['player'] = {
+                'id': player.id,
+                'profile_picture': player.profile_picture.url if player.profile_picture else None,
+                'country': player.country,
+                'phone_number': player.phone_number
+            }
 
-    elif user.role == 'organizer':
-        organizer = Organizer.objects.get(user=user)
-        data['organizer'] = {
-            'id': organizer.id,
-            'logo': organizer.logo.url if organizer.logo else None,
-            'description': organizer.description,
-            'website': organizer.website
-        }
+        elif user.role == 'Blog Writer':
+            blog_writer = BlogWriter.objects.get(user=user)
+            data['blog_writer'] = {
+                'id': blog_writer.id,
+                'bio': blog_writer.bio,
+                'profile_picture': blog_writer.profile_picture.url if blog_writer.profile_picture else None,
+                'website': blog_writer.website
+            }
 
-    elif user.role == 'organization':
-        organization = Organization.objects.get(user=user)
-        data['organization'] = {
-            'id': organization.id,
-            'organization_name': organization.organization_name,
-            'logo': organization.logo.url if organization.logo else None,
-            'description': organization.description,
-            'website': organization.website,
-            'address': organization.address
-        }
+        elif user.role == 'Organizer':
+            organizer = Organizer.objects.get(user=user)
+            data['organizer'] = {
+                'id': organizer.id,
+                'logo': organizer.logo.url if organizer.logo else None,
+                'description': organizer.description,
+                'website': organizer.website
+            }
 
-    return Response(data)
+        elif user.role == 'Organization':
+            organization = Organization.objects.get(user=user)
+            data['organization'] = {
+                'id': organization.id,
+                'organization_name': organization.organization_name,
+                'logo': organization.logo.url if organization.logo else None,
+                'description': organization.description,
+                'website': organization.website,
+                'address': organization.address
+            }
 
-# def GetUserProfile(request):
-#     user = request.user
-#     return Response({
-#         "user":{
-#             'user': user.id,
-#             'email': user.email,
-#             'first_name': user.first_name,
-#             'last_name': user.last_name,
-#             'role': user.role
-#         }
-#     })
+        return Response(data)
+    else:
+        return Response({"detail":"User not verified"},status=403)
 
 @api_view(['GET', 'POST'])
 def game_list(request):
@@ -144,5 +136,12 @@ def game_list(request):
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
+
+
+@api_view(['GET', 'POST'])
+def GetUsers(request):
+    users = UserProfile.objects.all()
+    users_serializer = UserProfileSerializer(users,many=True)
+    return Response({"users":users_serializer.data})
 
 

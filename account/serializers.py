@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from .models import Game, Player, BlogWriter, Organization, Organizer
+from .models import Game, Player, BlogWriter, Organization, Organizer,UserProfile
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ('id','username','first_name','last_name','avatar')
 
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:

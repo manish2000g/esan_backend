@@ -14,7 +14,6 @@ urlpatterns = [
      path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
      path("create-user-profile/",views.CreateUserProfile, name="create_user_profile"),
      path("get-user-profile/",views.GetUserProfile, name="get_user_profile"),
-    #  path('teams/', views.team_list),
-    #  path('teams/<int:pk>/', views.team_detail),
+     path("get-user-lists/",views.GetUsers, name="get_users"),
      path('games/', views.game_list, name='game_list'),
 ]
