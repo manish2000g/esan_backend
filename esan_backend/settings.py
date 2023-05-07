@@ -19,7 +19,7 @@ ALLOWED_HOSTS = ['*']
 
 
 # Application definition
-CSRF_TRUSTED_ORIGINS =['https://esan.hikingbees.com','http://localhost:8081']
+CSRF_TRUSTED_ORIGINS =['https://esan.hikingbees.com','http://localhost:8081','https://936b-111-119-49-108.ngrok-free.app']
 
 INSTALLED_APPS = [
     'jazzmin',
@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_rest_passwordreset',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'rest_framework',
@@ -71,18 +72,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'esan_backend.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-""" DATABASES = {
+DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
-} """ 
+} 
 
 
-DATABASES = {
+""" DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "esan",
@@ -91,7 +89,7 @@ DATABASES = {
         "HOST": "localhost",
         "PORT": "",
     }
-}
+} """
 
 
 # Password validation
@@ -148,6 +146,7 @@ MEDIA_ROOT = Path(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
+
 JAZZMIN_SETTINGS = {
     # title of the window (Will default to current_admin_site.site_title if absent or None)
     "site_title": "EsAN Admin",
@@ -220,5 +219,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp-relay.sendinblue.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'vishaldhakal9696@gmail.com'
-EMAIL_HOST_PASSWORD = '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'
+EMAIL_HOST_USER = 'vishaldhakal96@gmail.com'
+EMAIL_HOST_PASSWORD = '238f4VtBkTxHSzMU'

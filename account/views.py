@@ -3,7 +3,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from .models import BlogWriter, Game, Organization, Organizer, Player, UserProfile
 from rest_framework import status
-from .serializers import GameSerializer,UserProfileSerializer
+from .serializers import GameSerializer,UserProfileDetailSerializer,PlayerSerializer,BlogWritterSerializer,OrganizerSerializer,OrganizationSerializer,ChangePasswordSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import (
     api_view,
@@ -12,6 +12,7 @@ from rest_framework.decorators import (
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
 from django.core.mail import send_mail
+from rest_framework import generics
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
@@ -30,7 +31,39 @@ class CustomAuthToken(ObtainAuthToken):
                 'last_name': user.last_name,
                 'role': user.role
             }   
-        })
+        },status=200)
+
+class ChangePasswordView(generics.UpdateAPIView):
+    serializer_class = ChangePasswordSerializer
+    model = UserProfile
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self, queryset=None):
+        obj = self.request.user
+        return obj
+
+    def update(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            # Check old password
+            if not self.object.check_password(serializer.data.get("old_password")):
+                return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+
+            # set_password also hashes the password that the user will get
+            self.object.set_password(serializer.data.get("new_password"))
+            self.object.save()
+            response = {
+                'status': 'success',
+                'code': status.HTTP_200_OK,
+                'message': 'Password updated successfully',
+                'data': []
+            }
+
+            return Response(response)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 def VerifyUserProfile(request):
@@ -38,8 +71,17 @@ def VerifyUserProfile(request):
     userpr = UserProfile.objects.get(id=userid)
     userpr.is_verified = True
     userpr.save()
-    return Response({"detail":"Verified Sucessfully"})
+    return Response({"detail":"Verified Sucessfully"},status=200)
  
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def GetUserProfileDetail(request):
+    user = request.user
+    users_ser = UserProfileDetailSerializer(user)
+    return Response({
+        'user': users_ser.data,
+    },status=200)
+
 @api_view(['POST'])
 def CreateUserProfile(request):
     first_name = request.POST['first_name']
@@ -149,7 +191,7 @@ def GetUserProfile(request):
                 'address': organization.address
             }
 
-        return Response(data)
+        return Response(data,status=200)
     else:
         return Response({"detail":"User not verified"},status=403)
 
@@ -168,10 +210,64 @@ def game_list(request):
         return Response(serializer.errors, status=400)
 
 
-@api_view(['GET', 'POST'])
+@api_view(['GET'])
 def GetUsers(request):
     users = UserProfile.objects.all()
-    users_serializer = UserProfileSerializer(users,many=True)
-    return Response({"users":users_serializer.data})
+    users_serializer = UserProfileDetailSerializer(users,many=True)
+    return Response({"users":users_serializer.data},status=200)
 
+@api_view(['GET'])
+def GetUserDetail(request):
+    username = request.GET.get("name")
+    user = UserProfile.objects.get(username=username)
+    users_serializer = UserProfileDetailSerializer(user)
+
+    if user.role == "Player":
+        player = Player.objects.get(user=user)
+        player_serializer = PlayerSerializer(player)
+        return Response({"user":users_serializer.data,"detail":player_serializer.data},status=200)
+    elif user.role == "Blog Writer":
+        blog_writer = BlogWriter.objects.get(user=user)
+        blog_writer_serializer = BlogWritterSerializer(blog_writer)
+        return Response({"user":users_serializer.data,"detail":blog_writer_serializer.data},status=200)
+    elif user.role == "Organization":
+        organization = Organization.objects.get(user=user)
+        organization_serializer = OrganizationSerializer(organization)
+        return Response({"user":users_serializer.data,"detail":organization_serializer.data},status=200)
+    elif user.role == "Organizer":
+        organizer = Organizer.objects.get(user=user)
+        organizer_serializer = OrganizerSerializer(organizer)
+        return Response({"user":users_serializer.data,"detail":organizer_serializer.data},status=200)
+    else:
+        return Response({"user":users_serializer.data},status=200)
+
+@api_view(['POST'])
+def UpdateUserDetail(request):
+    username = request.POST.get("username")
+    user = UserProfile.objects.get(username=username)
+
+    user.first_name = request.POST.get("first_name")
+    user.last_name = request.POST.get("last_name")
+    user.nationality = request.POST.get("nationality","Nepal")
+    user.phone_number = request.POST.get("phone_number"," ")
+    user.address = request.POST.get("address", " ")
+    user.bio = request.POST.get("bio"," ")
+    user.status = request.POST.get("status","Active")
+    user.is_verified = request.POST.get("is_verified","False")=="True"
+    user.role = request.POST.get("role")
+    user.avatar = request.FILES.get("avatar")
+    
+    user.facebook_link = request.POST.get("facebook_link"," ")
+    user.instagram_link = request.POST.get("instagram_link"," ")
+    user.twitch_link = request.POST.get("twitch_link"," ")
+    user.discord_link = request.POST.get("discord_link"," ")
+    user.reddit_link = request.POST.get("reddit_link"," ")
+    user.website_link = request.POST.get("website_link"," ")
+    user.youtube_link = request.POST.get("youtube_link"," ")
+    user.twitter_link = request.POST.get("twitter_link"," ")
+    user.linkedin_link = request.POST.get("linkedin_link"," ")
+
+    user.save()
+
+    return Response({"success":"Updated sucess"},status=200)
 

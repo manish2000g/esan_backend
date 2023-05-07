@@ -20,44 +20,48 @@ class UserProfile(AbstractUser):
     avatar = models.ImageField(blank=True)
     status = models.CharField(max_length=15, choices=status_choices,default="Active")
     is_verified = models.BooleanField(default=False)
+    phone_number = models.CharField(max_length=20,blank=True)
+    address = models.CharField(max_length=500,blank=True)
+    nationality = models.CharField(max_length=100,default="Nepal")
+    bio = models.TextField(blank=True)
+    facebook_link = models.CharField(max_length=250,blank=True)
+    instagram_link = models.CharField(max_length=250,blank=True)
+    twitch_link = models.CharField(max_length=250,blank=True)
+    discord_link = models.CharField(max_length=250,blank=True)
+    reddit_link = models.CharField(max_length=250,blank=True)
+    website_link = models.CharField(max_length=250,blank=True)
+    youtube_link = models.CharField(max_length=250,blank=True)
+    twitter_link = models.CharField(max_length=250,blank=True)
+    linkedin_link = models.CharField(max_length=250,blank=True)
 
     def __str__(self) -> str:
         return self.username
     
+
 class Player(models.Model):
     user = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
-    profile_picture = models.ImageField(upload_to='media/images/player_profile_pictures/',blank=True)
-    country = models.CharField(max_length=100,blank=True)
-    phone_number = models.CharField(max_length=20,blank=True)
 
     def __str__(self):
         return self.user.username
 
 class BlogWriter(models.Model):
     user = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
-    bio = models.TextField(max_length=500,blank=True)
-    profile_picture = models.ImageField(upload_to='media/images/blog_profile_pictures/',blank=True)
     website = models.URLField(max_length=200,blank=True)
+    position = models.CharField(max_length=500,blank=True)
 
     def __str__(self):
         return self.user.username
 
 class Organizer(models.Model):
     user = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
-    logo = models.ImageField(upload_to='media/images/organizer_logos/',blank=True)
-    description = models.TextField(max_length=500,blank=True)
-    website = models.URLField(max_length=200,blank=True)
+    organization_name = models.CharField(max_length=255,unique=True,blank=True)
 
     def __str__(self):
         return self.user.username
 
 class Organization(models.Model):
     user = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
-    organization_name = models.CharField(max_length=255,unique=True)
-    logo = models.ImageField(upload_to='media/images/organization_logos/',blank=True)
-    description = models.TextField(max_length=500,blank=True)
-    website = models.URLField(max_length=200,blank=True)
-    address = models.CharField(max_length=255,blank=True)
+    organization_name = models.CharField(max_length=255,unique=True,blank=True)
 
     def __str__(self):
         return self.organization_name
