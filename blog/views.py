@@ -18,7 +18,6 @@ from rest_framework import status
 @api_view(['POST'])
 def Create_Article_Category(request):
     category_name = request.data.get('category_name')
-    description = request.data.get('description')
     # Create a new ArticleCategory instance
     category = ArticleCategory(
         category_name=category_name,

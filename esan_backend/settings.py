@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'account',
     'tournament',
     'corsheaders',
+    'faq',
+    'testimonial'
 ]
 
 MIDDLEWARE = [
