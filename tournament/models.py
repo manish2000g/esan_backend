@@ -14,8 +14,8 @@ class Team(models.Model):
 
 class Event(models.Model):
     name = models.CharField(max_length=255)
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField(auto_now=True)
     location = models.CharField(max_length=255, blank=True)
     description = RichTextField(blank=True)
     organizer = models.ForeignKey(Organizer, on_delete=models.CASCADE)
@@ -27,18 +27,28 @@ class Event(models.Model):
         ordering = ('-start_date',)
 
 class Tournament(models.Model):
+    PARTICIPANT_TYPE_CHOICES = [
+        ('Solo', 'Solo'),
+        ('Duo', 'Duo'),
+        ('Squad', 'Squad')
+    ]
+    TOURNAMENT_TYPE_CHOICES = [
+        ('Single Elimination', 'Single Elimination'),
+        ('Double Elimination', 'Double Elimination'),
+        ('League', 'League'),
+        ('Battle Royal', 'Battle Royal')
+    ]
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     description = RichTextField()
-    registration_end_date = models.DateTimeField(auto_now=True)
+    registration_start_date = models.DateTimeField()
+    registration_end_date = models.DateTimeField()
     start_date = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField(auto_now=True)
-    location = models.CharField(max_length=300)
     entry_fee = models.DecimalField(max_digits=8, decimal_places=2)
-    organizer = models.ForeignKey(Organizer, on_delete=models.CASCADE)
-    team = models.ManyToManyField(Team, related_name='teams', blank=True)
-    player = models.ManyToManyField(Player, related_name='players', blank=True)
-
+    participant_type = models.CharField(choices=PARTICIPANT_TYPE_CHOICES, max_length=10)
+    tournament_type = models.CharField(max_length=20, choices=TOURNAMENT_TYPE_CHOICES)
+    number_of_participants = models.PositiveBigIntegerField()
     def __str__(self):
         return self.name
 
@@ -60,63 +70,40 @@ class PrizePool(models.Model):
 
 
 class Registration(models.Model):
-    REGISTRATION_TYPE_CHOICES = [
-        ('TEAM', 'Team'),
-        ('PLAYER', 'Player'),
+    PAYMENT_CHOICES = [
+        ('Esewa','Esewa'),
+        ('Khalti', 'Khalti'),
+        ('Card', 'Card')
     ]
-
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
-    registration_type = models.CharField(choices=REGISTRATION_TYPE_CHOICES, max_length=10)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
-    player = models.ForeignKey(Player, on_delete=models.CASCADE, null=True, blank=True)
-    captain = models.ManyToManyField(Player, related_name='captain')
-    is_paid = models.BooleanField(default=False)
-
+    payment_method = models.CharField(choices= PAYMENT_CHOICES, max_length=20)
+    amount = models.FloatField()
+    date_registered = models.DateTimeField(auto_now_add=True)
+    remarks = models.CharField(max_length=400, blank=True)
     def __str__(self):
-        if self.registration_type == 'TEAM':
             return f"{self.team} registered for {self.tournament}"
-        else:
-            return f"{self.player} registered for {self.tournament}"
-
-# class Registration(models.Model):
-#     team_name = models.ForeignKey(Team, on_delete=models.CASCADE)
-#     team_logo = models.ImageField(upload_to='team_logos/')
-#     captain = models.ManyToManyField(Player, related_name='captain')
-#     players = models.ManyToManyField(Player, related_name='registrations', blank=True)
-#     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
-#     is_paid = models.BooleanField(default=False)
-
-#     def __str__(self):
-#         return self.team_name
 
 class Game(models.Model):
-    GAME_TYPE_CHOICES = [
-        ('SINGLE', 'Single'),
-        ('DOUBLE', 'Double'),
-        ('SWISS SYSTEM', 'Swiss system'),
-        ('LEAGUE', 'League'),
-        ('ROUND ROBINS', 'Round Robins'),
-        ('BATTLE ROYAL', 'Battle Royal')
-    ]
+    
     GAME_MODE_CHOICES = [
-        ('ONLINE', 'Online'),
-        ('OFFLINE', 'Offline'),
+        ('Online', 'Online'),
+        ('Physical', 'Physical'),
     ]
     GAME_PLATFORM = [
-        ('mobile', 'Mobile'),
-        ('console', 'Console'),
-        ('pc', 'PC')
+        ('Mobile', 'Mobile'),
+        ('Console', 'Console'),
+        ('PC', 'PC')
     ]
     game_platform = models.CharField(max_length=15, choices=GAME_PLATFORM)
     name = models.CharField(max_length=300)
-    game_type = models.CharField(max_length=20, choices=GAME_TYPE_CHOICES)
     game_mode = models.CharField(max_length=10, choices=GAME_MODE_CHOICES)
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
     description = RichTextField()
     location = models.CharField(max_length=200)
 
     def __str__(self):
-        return f"{self.game_type} - {self.tournament.name}"
+        return f"{self.name} - {self.tournament.name}"
 
 class Participant(models.Model):
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
@@ -124,13 +111,7 @@ class Participant(models.Model):
 
    
 class TournamentBracket(models.Model):
-    TOURNAMENT_TYPE_CHOICES = [
-        ('single_elimination', 'Single Elimination'),
-        ('double_elimination', 'Double Elimination'),
-        ('round_robin', 'Round Robin'),
-    ]
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='brackets')
-    type = models.CharField(max_length=50, choices=TOURNAMENT_TYPE_CHOICES)
     number_of_rounds = models.PositiveSmallIntegerField()
     rounds_per_match = models.IntegerField()
     winner = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True, related_name='won_brackets')
@@ -145,7 +126,7 @@ class TournamentBracket(models.Model):
         ordering = ['number_of_rounds']
 
     def __str__(self):
-        return f'{self.type} Bracket for {self.tournament}'
+        return f'Bracket for {self.tournament}'
     
 class Round(models.Model):
     bracket = models.ForeignKey(TournamentBracket, on_delete=models.CASCADE)
@@ -157,95 +138,75 @@ class Round(models.Model):
         return f"{self.bracket.tournament.name} - Round {self.round_number}"   
 
 class Group(models.Model):
+    Elimination_mode = [
+        ('Single', 'Single'),
+        ('Double', 'Double'),
+        ('None', 'None')
+    ]
     bracket = models.ForeignKey(TournamentBracket, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    group_number = models.IntegerField(null=True, blank=True)
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
+    elimination_mode = models.CharField(max_length=20, choices=Elimination_mode)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.bracket.tournament.name} - Group {self.group_number}: {self.name}"
+        return f"{self.tournament.name} - {self.name}"
+    
+class Stage(models.Model):
+    Status=[
+        ('Completed', 'Completed'),
+        ('Ongoing', 'Ongoing')
+    ]
+    name = models.CharField(max_length=50)
+    groups = models.ManyToManyField(Group, related_name='groups')
+    status = models.CharField(max_length= 20, choices=Status)
+    start_time = models.DateTimeField(auto_now_add=True)
+    end_time = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.status}"
 
 class Match(models.Model):
-    MATCH_TYPE_CHOICES = (
-        ('DUEL', 'Duel'),
-        ('FFA', 'Free for All'),
-    )
     MATCH_STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('in_progress', 'In Progress'),
         ('completed', 'Completed'),
     ]
-    match_type = models.CharField(max_length=4, choices=MATCH_TYPE_CHOICES)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
-    bracket = models.ForeignKey(TournamentBracket, on_delete=models.CASCADE)
-    round = models.ForeignKey(Round, on_delete=models.CASCADE, null=True, blank=True)
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, blank=True)
     match_number = models.IntegerField()
-    player_1 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='match_team_1')
-    player_2 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='match_team_2')
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField(null=True, blank=True)
-    RESULT_CHOICES = [
-        ('player_1', 'Player 1 wins'),
-        ('player_2', 'Player 2 wins'),
-        ('draw', 'Draw'),
-    ]
-    result = models.CharField(max_length=10, choices=RESULT_CHOICES)
+    number_of_rounds = models.PositiveBigIntegerField()
+    team_1 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='match_team_1')
+    team_2 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='match_team_2')
+    start_time = models.DateTimeField(auto_now_add=True)
+    end_time = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=20, choices=MATCH_STATUS_CHOICES, default='pending')
 
     def __str__(self):
-        return f"{self.player_1.user.username} vs {self.player_2.user.username} - {self.game.tournament.name}"
-
-class DuelMatch(models.Model):
-    match = models.OneToOneField(Match, on_delete=models.CASCADE)
-    player_1 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='duel_matches_player1')
-    player_2 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='duel_matches_player2')
-    score_1 = models.PositiveIntegerField(blank=True, null=True)
-    score_2 = models.PositiveIntegerField(blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.player_1.user.username} vs {self.player_2.user.username} - {self.match.game.tournament.name}"
-    
-class FFAMatch(models.Model):
-    match = models.OneToOneField(Match, on_delete=models.CASCADE)
-    players = models.ManyToManyField(Player, related_name='ffa_matches_players')
-    scores = models.ManyToManyField(Player, through='FFAScore')
-
-    def __str__(self):
-        return f"FFA Match - {self.match.game.tournament.name}"
-
-class FFAScore(models.Model):
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    match = models.ForeignKey(FFAMatch, on_delete=models.CASCADE)
-    score = models.IntegerField()
-
-    # def __str__(self):
-    #     return f"{}"
+        return f"{self.team_1.name} vs {self.team_2.name} in {self.game.name} - {self.status}"
 
 class Schedule(models.Model):
-    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='schedule')
-    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='schedule')
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField(null=True, blank=True)
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
+    match = models.ForeignKey(Match, on_delete=models.CASCADE)
+    start_time = models.DateTimeField(auto_now_add=True)
+    end_time = models.DateTimeField(auto_now=True)
     venue = models.CharField(max_length=50)
     city = models.CharField(max_length=50)
-    country = models.CharField(max_length=50)
-    
-class Result(models.Model):
-    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name="results")
-    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="match_result")
-    created_at = models.DateTimeField(auto_now_add=True)
-    RESULT_CHOICES = [
-        ('player_1', 'Player 1 wins'),
-        ('player_2', 'Player 2 wins'),
-        ('draw', 'Draw'),
-    ]
-    result = models.CharField(max_length=10, choices=RESULT_CHOICES)
-    duel_score_1 = models.PositiveIntegerField(null=True, blank=True)
-    duel_score_2 = models.PositiveIntegerField(null=True, blank=True)
-    ffa_scores = models.PositiveIntegerField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.tournament} - {self.result}"
+        return f"{self.tournament.name} - {self.match.match_number} - {self.start_time} - {self.end_time}"
+    
+class Result(models.Model):
+    RESULT_CHOICES = [
+        ('Team_1', 'Team 1 wins'),
+        ('Team_2', 'Team 2 wins'),
+        ('Draw', 'Draw'),
+    ]
+    result = models.CharField(max_length=10, choices=RESULT_CHOICES)
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name="results")
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="match_result")
+
+    def __str__(self):
+        return f"{self.tournament} - {self.match.match_number} - {self.result}"
 
 class Sponsor(models.Model):
     SPONSOR_TYPE_CHOICES = [
@@ -266,7 +227,7 @@ class Sponsor(models.Model):
     type = models.CharField(max_length=40, choices=SPONSOR_TYPE_CHOICES)
     tournament = models.ForeignKey(Tournament,on_delete=models.CASCADE, related_name='sponsor')
     def __str__(self):
-        return self.name
+        return f"{self.name} - {self.type} for {self.tournament.name}"
     
 
 class LivePage(models.Model):
@@ -278,11 +239,14 @@ class LivePage(models.Model):
         return self.tournament.name
 
 class Announcement(models.Model):
-    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
-    description = models.TextField()
+    description = RichTextField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_published = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.event.name} - {self.title}'
 
 
 
