@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/', include('home.urls')),
     path('api/', include('account.urls')),
     path('api/', include('tournament.urls')),
+    path('api/', include('faq.urls')),
     path('api/', include('testimonial.urls'))
 ]
 

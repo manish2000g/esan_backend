@@ -4,13 +4,8 @@ from django.db import models
 from django.db import models
 
 class FAQ(models.Model):
-    question = models.CharField(max_length=255)
-    answer = models.TextField()
+    heading = models.CharField(max_length= 100)
+    detail = models.TextField()
+    value = models.CharField(max_length= 100)
 
 
-# full Name
-# email
-# desc
-# rating
-
-# only accessed by verified

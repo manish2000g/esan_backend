@@ -17,3 +17,35 @@ def submit_testimonial(request):
         return Response({"testimonial_id": testimonial.id}, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+def get_testimonials(request):
+    testimonials = Testimonial.objects.all()
+    serializer = TestimonialSerializer(testimonials, many=True)
+    return Response(serializer.data)
+
+@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+def get_testimonial(request, pk):
+    testimonial = Testimonial.objects.get(pk=pk)
+    serializer = TestimonialSerializer(testimonial)
+    return Response(serializer.data)
+
+@permission_classes([IsAuthenticated])
+@api_view(['PUT'])
+def edit_testimonial(request, pk):
+    testimonial = Testimonial.objects.get(pk=pk)
+    serializer = TestimonialSerializer(testimonial, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@permission_classes([IsAuthenticated])
+@api_view(['DELETE'])
+def delete_testimonial(request, pk):
+    testimonial = Testimonial.objects.get(pk=pk)
+    testimonial.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+ 

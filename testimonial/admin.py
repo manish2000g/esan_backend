@@ -3,7 +3,7 @@ from .models import Testimonial
 
 
 class TestimonialAdmin(admin.ModelAdmin):
-    list_display = ('id', 'full_name', 'email')
+    list_display = ('id', 'user')
     search_fields = ('full_name', 'email')
 
 admin.site.register(Testimonial, TestimonialAdmin)
