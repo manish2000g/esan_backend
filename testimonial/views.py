@@ -26,10 +26,10 @@ def submit_testimonial(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def verify_testimonial(request):
-    username = request.GET.get("name")
-    user = UserProfile.objects.get(username=username)
+    idd = int(request.GET.get("id"))
+    user = request.user
     if user.role == "Admin":
-        testimonial = Testimonial.objects.get(user=user)
+        testimonial = Testimonial.objects.get(id=idd)
         testimonial.is_verified = True
         testimonial.save()
         return Response({"success": "Submitted Sucessfully"}, status=status.HTTP_202_ACCEPTED)
