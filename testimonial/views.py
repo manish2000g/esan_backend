@@ -36,9 +36,22 @@ def verify_testimonial(request):
     user = request.user
     if user.role == "Admin":
         testimonial = Testimonial.objects.get(id=idd)
-        testimonial.is_verified = True
+        aaaa = testimonial.is_verified
+        testimonial.is_verified = not aaaa
         testimonial.save()
         return Response({"success": "Submitted Sucessfully"}, status=status.HTTP_202_ACCEPTED)
+    else:
+        return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_testimonial(request):
+    idd = int(request.GET.get("id"))
+    user = request.user
+    if user.role == "Admin":
+        testimonial = Testimonial.objects.get(id=idd)
+        testimonial.delete()
+        return Response({"success": "Deleted Sucessfully"}, status=status.HTTP_200_OK)
     else:
         return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
 
