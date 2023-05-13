@@ -10,7 +10,7 @@ from account.models import UserProfile
 @api_view(['GET'])
 def testimonials(request):
     testimonial = Testimonial.objects.all()
-    testimonial_ser = TestimonialSerializer(testimonial)
+    testimonial_ser = TestimonialSerializer(testimonial,many=True)
     return Response({"testimonials": testimonial_ser.data}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
