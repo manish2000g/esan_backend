@@ -7,4 +7,5 @@ urlpatterns = [
     path('verify-testimonial/', verify_testimonial, name='verify_testimonial'),
     path('update-testimonial/', update_testimonial, name='update_testimonial'),
     path('testimonials/', testimonials, name='testimonials'),
+    path('all-testimonials/', all_testimonials, name='testimonials'),
 ]
