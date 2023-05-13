@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from .models import Testimonial
-from account.serializers import UserProfileDetailSerializer
+from account.serializers import UserProfileSerializer
 
 class TestimonialSerializer(serializers.ModelSerializer):
-    user = UserProfileDetailSerializer(read_only=True)
+    user = UserProfileSerializer(read_only=True)
     class Meta:
         model = Testimonial
         fields = '__all__'
