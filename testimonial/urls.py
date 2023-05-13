@@ -1,6 +1,6 @@
 from .import views
 from django.urls import path
-from .views import submit_testimonial,verify_testimonial,update_testimonial,testimonials
+from .views import all_testimonials, submit_testimonial,verify_testimonial,update_testimonial,testimonials
 
 urlpatterns = [
     path('submit-testimonial/', submit_testimonial, name='submit_testimonial'),
