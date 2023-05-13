@@ -1,10 +1,10 @@
 from .import views
 from django.urls import path
+from .views import submit_testimonial,verify_testimonial,update_testimonial,testimonials
 
 urlpatterns = [
-    path('create_testimonials/', views.submit_testimonial, name='create_testimonial'),
-    path('testimonials/', views.get_testimonials, name='testimonials'),
-    path('testimonials/<int:pk>/', views.get_testimonial, name='testimonial'),
-    path('testimonials/<int:pk>/edit/', views.edit_testimonial, name='edit_testimonial'),
-    path('testimonials/<int:pk>/delete/', views.delete_testimonial, name='delete_testimonial'),
+    path('submit-testimonial/', submit_testimonial, name='submit_testimonial'),
+    path('verify-testimonial/', verify_testimonial, name='verify_testimonial'),
+    path('update-testimonial/', update_testimonial, name='update_testimonial'),
+    path('testimonials/', testimonials, name='testimonials'),
 ]
