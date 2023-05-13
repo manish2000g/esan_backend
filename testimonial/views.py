@@ -18,7 +18,7 @@ def testimonials(request):
 def submit_testimonial(request):
     user = request.user
     description = request.POST.get("description")
-    rating = request.POST.get("rating")
+    rating = int(request.POST.get("rating"))
     testimonial = Testimonial(user=user,description=description,rating=rating)
     testimonial.save()
     return Response({"success": "Submitted Sucessfully"}, status=status.HTTP_201_CREATED)
@@ -43,7 +43,7 @@ def update_testimonial(request):
     user = UserProfile.objects.get(username=username)
     testimonial = Testimonial.objects.get(user=user)
     description = request.POST.get("description")
-    rating = request.POST.get("rating")
+    rating = int(request.POST.get("rating"))
     
     testimonial.description = description
     testimonial.rating = rating
