@@ -39,9 +39,8 @@ def verify_testimonial(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_testimonial(request):
-    username = request.GET.get("name")
-    user = UserProfile.objects.get(username=username)
-    testimonial = Testimonial.objects.get(user=user)
+    idd = int(request.GET.get("id"))
+    testimonial = Testimonial.objects.get(id=idd)
     description = request.POST.get("description")
     rating = int(request.POST.get("rating"))
     
