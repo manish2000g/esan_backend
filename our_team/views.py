@@ -8,4 +8,4 @@ from rest_framework.decorators import api_view
 def OurTeams(request):
     teams = OurTeam.objects.all()
     serializers = OurTeamSerializer(teams, many=True)
-    return Response(serializers.data)
+    return Response({"Our Team": serializers.data})
