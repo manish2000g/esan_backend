@@ -4,4 +4,4 @@ from .models import OurTeam
 class OurTeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = OurTeam
-        fields = ['id', 'name', 'post']
+        fields = '__all__'
