@@ -107,6 +107,9 @@ class Tournament(models.Model):
     contact_email = models.CharField(max_length=500,blank=True)
     discord_link = models.URLField(max_length=500,blank=True)
 
+    def __str__(self) -> str:
+        return self.tournament_name
+
     
 class TournamentStreams(models.Model):
     tournament = models.ForeignKey(Tournament,on_delete=models.CASCADE)
@@ -249,41 +252,14 @@ class TeamMatch(models.Model):
     def __str__(self) -> str:
         return self.team1.team_name + " VS " + self.team2.team_name
 
-
-class SoloTournamentBracket(models.Model):
+    
+class TournamentBracket(models.Model):
+    bracket_types = (
+        ('Winner Bracket', 'Winner Bracket'),
+        ('Looser Bracket', 'Looser Bracket')
+    )
+    bracket_type = models.CharField(choices=bracket_types, max_length=30)
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
-    round_number = models.PositiveSmallIntegerField()
-    rounds_per_match = models.IntegerField()
-    participants = models.ManyToManyField(Player, related_name='participants')
-    winner = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='won_brackets')
-    loser = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='lost_brackets')
-    start_date = models.DateTimeField(auto_now_add=True)
-    end_date = models.DateTimeField(auto_now=True)
-    duration = models.DurationField(null=True, blank=True)
-    number_of_teams = models.PositiveSmallIntegerField(null=True, blank=True)
-    is_complete = models.BooleanField(default=False)
-    
-    class Meta:
-        ordering = ['round_number']
-
+    participants = models.ManyToManyField(Team, related_name='Team_participants')
     def __str__(self):
-        return f'Bracket for {self.tournament}'
-    
-class TeamTournamentBracket(models.Model):
-    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
-    round_number = models.PositiveSmallIntegerField()
-    rounds_per_match = models.IntegerField()
-    participants = models.ManyToManyField(Player, related_name='Team_participants')
-    winner = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team_won_brackets')
-    loser = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team_lost_brackets')
-    start_date = models.DateTimeField(auto_now_add=True)
-    end_date = models.DateTimeField(auto_now=True)
-    duration = models.DurationField(null=True, blank=True)
-    number_of_teams = models.PositiveSmallIntegerField(null=True, blank=True)
-    is_complete = models.BooleanField(default=False)
-    
-    class Meta:
-        ordering = ['round_number']
-
-    def __str__(self):
-        return f'Bracket for {self.tournament}'
+        return f'{self.bracket_type} for {self.tournament}'
