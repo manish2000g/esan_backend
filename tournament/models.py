@@ -1,6 +1,6 @@
 from django.db import models
 from ckeditor.fields import RichTextField
-from account.models import UserProfile,Organizer,Organization
+from account.models import Player, UserProfile,Organizer,Organization
     
 class EliminationMode(models.Model):
     STAGE_ELIMINTAION_MODES = (
@@ -106,6 +106,9 @@ class Tournament(models.Model):
     accept_registration_automatic = models.BooleanField(default=False)
     contact_email = models.CharField(max_length=500,blank=True)
     discord_link = models.URLField(max_length=500,blank=True)
+
+    def __str__(self) -> str:
+        return self.tournament_name
 
     
 class TournamentStreams(models.Model):
@@ -248,3 +251,15 @@ class TeamMatch(models.Model):
 
     def __str__(self) -> str:
         return self.team1.team_name + " VS " + self.team2.team_name
+
+    
+class TournamentBracket(models.Model):
+    bracket_types = (
+        ('Winner Bracket', 'Winner Bracket'),
+        ('Looser Bracket', 'Looser Bracket')
+    )
+    bracket_type = models.CharField(choices=bracket_types, max_length=30)
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
+    participants = models.ManyToManyField(Team, related_name='Team_participants')
+    def __str__(self):
+        return f'{self.bracket_type} for {self.tournament}'
