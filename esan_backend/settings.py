@@ -21,6 +21,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 CSRF_TRUSTED_ORIGINS =['https://esan.hikingbees.com','http://localhost:8081','https://1449-111-119-49-217.ngrok-free.app']
 
+
 INSTALLED_APPS = [
     'jazzmin',
     'django.contrib.admin',
@@ -41,7 +42,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'faq',
     'testimonial',
-    'our_team'
+    'our_team',
+    'newsletter',
 ]
 
 MIDDLEWARE = [

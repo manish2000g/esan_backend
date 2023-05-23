@@ -6,4 +6,5 @@ urlpatterns = [
     path('create-team/', create_our_team, name = 'create_team'),
     path('update-team/', update_our_team, name = 'update_team'),
     path('delete-team/', delete_our_team, name = 'delete_team'),
+
 ]

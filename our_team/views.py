@@ -5,6 +5,7 @@ from rest_framework.decorators import (api_view, permission_classes)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
+
 @api_view(['GET'])
 def our_teams(request):
     teams = OurTeam.objects.all()
@@ -42,7 +43,6 @@ def create_our_team(request):
         return Response({"success": "Team member Created Successfully"})
     else:
         return Response({"error":"Unauthourized for creating our_team"},status=status.HTTP_401_UNAUTHORIZED)
-
     
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
