@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'faq',
     'testimonial',
-    'our_team'
+    'our_team',
+    'newsletter',
 ]
 
 MIDDLEWARE = [

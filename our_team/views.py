@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from our_team.models import OurTeam
 from our_team.serializers import OurTeamSerializer
 from rest_framework.decorators import api_view
+from rest_framework import status
 
 @api_view(['GET'])
 def OurTeams(request):
@@ -33,7 +34,7 @@ def CreateOurTeam(request):
         linkedin_link = linkedin_link
     ) 
     team.save()
-    return Response({"success": "Team member Created Successfully"})
+    return Response({"success": "Team member Created Successfully"},status=status.HTTP_200_OK)
 
     
 @api_view(['PUT'])
