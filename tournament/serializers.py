@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import (EliminationMode, Game, Team, Event, EventFAQ, EventSponsor,
                      Tournament, TournamentFAQ, TournamentSponsor, TournamentStreams, Stage,SoloTournamentRegistration,TeamTournamentRegistration,SoloGroup,TeamGroup,SoloMatch,TeamMatch)
+from account.serializers import UserProfileSerializer,OrganizationSerializer
 
 class EliminationModeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,13 +16,14 @@ class GameSerializer(serializers.ModelSerializer):
         fields = ('id', 'game_name', 'game_image', 'game_type', 'elimination_modes')
 
 class TeamSerializer(serializers.ModelSerializer):
-    players = serializers.StringRelatedField(many=True)
-    manager = serializers.StringRelatedField()
-    organization = serializers.StringRelatedField()
+    players = UserProfileSerializer(many=True)
+    manager = UserProfileSerializer(read_only=True)
+    game = GameSerializer(read_only=True)
+    organization = OrganizationSerializer(read_only=True)
 
     class Meta:
         model = Team
-        fields = ('id', 'team_name', 'team_image', 'game', 'team_type', 'players', 'manager', 'organization')
+        fields = ('id', 'team_name', 'organization','team_image', 'game', 'team_type', 'players', 'manager')
 
 class EventSerializer(serializers.ModelSerializer):
     class Meta:

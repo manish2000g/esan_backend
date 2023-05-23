@@ -1,9 +1,11 @@
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from .models import BlogWriter, Game, Organization, Organizer, Player, UserProfile
+from .models import BlogWriter, Organization, Organizer, Player, UserProfile,PlayerRequest
+from tournament.models import Team,Game
+from tournament.serializers import TeamSerializer,GameSerializer
+from .serializers import UserProfileDetailSerializer,PlayerSerializer,BlogWritterSerializer,OrganizerSerializer,OrganizationSerializer,ChangePasswordSerializer,PlayerRequestSerializer,UserProfileSerializer
 from rest_framework import status
-from .serializers import GameSerializer,UserProfileDetailSerializer,PlayerSerializer,BlogWritterSerializer,OrganizerSerializer,OrganizationSerializer,ChangePasswordSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import (
     api_view,
@@ -157,27 +159,26 @@ def GetUserProfile(request):
             player = Player.objects.get(user=user)
             data['player'] = {
                 'id': player.id,
-                'profile_picture': player.profile_picture.url if player.profile_picture else None,
-                'country': player.country,
-                'phone_number': player.phone_number
+                'nationality': player.user.nationality,
+                'phone_number': player.user.phone_number
             }
 
         elif user.role == 'Blog Writer':
             blog_writer = BlogWriter.objects.get(user=user)
             data['blog_writer'] = {
                 'id': blog_writer.id,
-                'bio': blog_writer.bio,
-                'profile_picture': blog_writer.profile_picture.url if blog_writer.profile_picture else None,
-                'website': blog_writer.website
+                'bio': blog_writer.user.bio,
+                'website': blog_writer.user.website_link
             }
 
         elif user.role == 'Organizer':
             organizer = Organizer.objects.get(user=user)
             data['organizer'] = {
                 'id': organizer.id,
-                'logo': organizer.logo.url if organizer.logo else None,
-                'description': organizer.description,
-                'website': organizer.website
+                'organization_name': organizer.organization_name,
+                'description': organizer.user.bio,
+                'website': organizer.user.website_link,
+                'address': organizer.user.address
             }
 
         elif user.role == 'Organization':
@@ -185,10 +186,9 @@ def GetUserProfile(request):
             data['organization'] = {
                 'id': organization.id,
                 'organization_name': organization.organization_name,
-                'logo': organization.logo.url if organization.logo else None,
-                'description': organization.description,
-                'website': organization.website,
-                'address': organization.address
+                'bio': organization.user.bio,
+                'website_link': organization.user.website_link,
+                'address': organization.user.address
             }
 
         return Response(data,status=200)
@@ -209,6 +209,109 @@ def game_list(request):
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def organization_players(request):
+    user = request.user
+    try:
+        organization = Organization.objects.get(user=user)
+        players = organization.players.all()
+        teams = Team.objects.filter(organization=organization)
+        teams_ser = TeamSerializer(teams,many=True)
+        free_players = players.exclude(id__in=teams.values('players'))
+        free_players_ser = UserProfileSerializer(free_players,many=True)
+        return Response({"free_players":free_players_ser.data,"teams":teams_ser.data}, status=201)
+    except:
+        return Response({"error":"Organization Doesnot Exists"},status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def all_players(request):
+    try:
+        userr = request.user
+        players = UserProfile.objects.filter(role="Player")
+        teams = Team.objects.all()
+        organizations = Organization.objects.all()
+        orgg = Organization.objects.get(user=userr)
+        playerreqs = PlayerRequest.objects.filter(organization=orgg,request_status="Requested").values_list("player")
+        all_prss = PlayerRequest.objects.filter(organization=orgg)
+        all_prss_ser = PlayerRequestSerializer(all_prss,many=True)
+        free_players = players.exclude(id__in=teams.values('players') or organizations.values('players')).exclude(id__in=playerreqs)
+        free_players_ser = UserProfileSerializer(free_players,many=True)
+        return Response({"free_players":free_players_ser.data,"player_requests":all_prss_ser.data}, status=201)
+    except:
+        return Response({"error":"Problem fetching Players"},status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def request_player(request):
+    user = request.user
+    if user.role == "Player":
+        orgid = request.GET.get("id")
+        org = Organization.objects.get(id=orgid)
+        newpr = PlayerRequest.objects.create(player=user,organization=org,request_started_by="Player",request_status="Requested")
+        newpr.save()
+        return Response({"success":"Player request success"},status=status.HTTP_201_CREATED)
+    elif user.role == "Organization":
+        plaid = request.GET.get("id")
+        player = UserProfile.objects.get(id=plaid)
+        orgg = Organization.objects.get(user=user)
+        newpr = PlayerRequest.objects.create(organization=orgg,player=player,request_started_by="Organization",request_status="Requested")
+        newpr.save()
+        return Response({"success":"Player request success"},status=status.HTTP_201_CREATED)
+    else:
+        return Response({"error":"You cannot request"},status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def my_requests(request):
+    user = request.user
+    if user.role == "Player":
+        player_requests = PlayerRequest.objects.filter(player=user)
+        player_requests_ser = PlayerRequestSerializer(player_requests,many=True)
+        return Response({"player_requests":player_requests_ser.data},status=status.HTTP_200_OK)
+    elif user.role == "Organization":
+        orgg = Organization.objects.get(user=user)
+        player_requests = PlayerRequest.objects.filter(organization=orgg)
+        player_requests_ser = PlayerRequestSerializer(player_requests,many=True)
+        return Response({"player_requests":player_requests_ser.data},status=status.HTTP_200_OK)
+    else:
+        return Response({"error":"You cannot request"},status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def accept_request(request):
+    user = request.user
+    reqid = request.GET.get("id")
+    remarks = request.POST.get("remarks"," ")
+    player_request = PlayerRequest.objects.get(id=reqid)
+    orgg = player_request.organization
+    player = player_request.player
+    orgg.players.add(player)
+    player_request.request_status = "Accepted"
+    player_request.remarks = remarks
+    player_request.save()
+    return Response({"success":"Request Accepted"},status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def delete_request(request):
+    reqid = request.GET.get("id")
+    player_request = PlayerRequest.objects.get(id=reqid)
+    player_request.delete()
+    return Response({"success":"Deleted Sucessfully"},status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def reject_request(request):
+    user = request.user
+    reqid = request.GET.get("id")
+    remarks = request.POST.get("remarks"," ")
+    player_request = PlayerRequest.objects.get(id=reqid)
+    player_request.request_status = "Rejected"
+    player_request.remarks = remarks
+    player_request.save()
+    return Response({"success":"Request Rejected"},status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def GetUsers(request):

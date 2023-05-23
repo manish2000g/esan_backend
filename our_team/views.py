@@ -3,15 +3,14 @@ from our_team.models import OurTeam
 from our_team.serializers import OurTeamSerializer
 from rest_framework.decorators import api_view
 
-# Create your views here.
 @api_view(['GET'])
 def OurTeams(request):
     teams = OurTeam.objects.all()
     serializers = OurTeamSerializer(teams, many=True)
-    return Response({"Our Team": serializers.data})
+    return Response({"teams": serializers.data})
 
 @api_view(['POST'])
-def Create_OurTeam(request):
+def CreateOurTeam(request):
     name = request.POST.get('name')
     post = request.POST.get('post')
     image = request.POST.get('image')
@@ -34,11 +33,12 @@ def Create_OurTeam(request):
         linkedin_link = linkedin_link
     ) 
     team.save()
-    return Response({"success": "OurTeam Created Successfully"})
+    return Response({"success": "Team member Created Successfully"})
 
     
 @api_view(['PUT'])
-def Update_OurTeam(request, pk):
+def UpdateOurTeam(request):
+    pk = request.GET.get("id")
     team = OurTeam.objects.get(pk=pk)
     name = request.POST.get('name')
     post = request.POST.get('post')
@@ -61,10 +61,11 @@ def Update_OurTeam(request, pk):
     team.linkedin_link = linkedin_link
 
     team.save()
-    return Response({"success": "OurTeam Updated Successfully"})
+    return Response({"success": "Team member Updated Successfully"})
 
 @api_view(['Delete'])
-def Delete_OurTeam(request, pk):
+def DeleteOurTeam(request):
+    pk = request.GET.get("id")
     team = OurTeam.objects.get(pk=pk)
     team.delete()
-    return Response({"OurTeam Deleted Successfully"})
+    return Response({"Team member Deleted Successfully"})

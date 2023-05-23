@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Game, Player, BlogWriter, Organization, Organizer,UserProfile
+from .models import Player, BlogWriter, Organization, Organizer,UserProfile,PlayerRequest
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -34,12 +34,15 @@ class OrganizerSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class OrganizationSerializer(serializers.ModelSerializer):
+    user = UserProfileSerializer(read_only=True)
     class Meta:
         model = Organization
         fields = '__all__'
 
-class GameSerializer(serializers.ModelSerializer):
+class PlayerRequestSerializer(serializers.ModelSerializer):
+    player = UserProfileSerializer(read_only=True)
+    organization = OrganizationSerializer(read_only=True)
+    
     class Meta:
-        model = Game
-        fields = ['id', 'name']
-
+        model = PlayerRequest
+        fields = '__all__'

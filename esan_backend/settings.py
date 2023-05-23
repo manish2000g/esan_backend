@@ -19,7 +19,7 @@ ALLOWED_HOSTS = ['*']
 
 
 # Application definition
-CSRF_TRUSTED_ORIGINS =['https://esan.hikingbees.com','http://localhost:8081','https://936b-111-119-49-108.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS =['https://esan.hikingbees.com','http://localhost:8081','https://287e-111-119-49-217.ngrok-free.app']
 
 INSTALLED_APPS = [
     'jazzmin',

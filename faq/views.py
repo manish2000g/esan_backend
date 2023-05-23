@@ -4,15 +4,13 @@ from rest_framework.decorators import api_view
 from faq.models import FAQ
 from faq.serializers import FAQSerializer
 
-# Create your views here.
-
 @api_view(["POST"])
-def Create_FAQ(request):
+def CreateFAQ(request):
     heading = request.POST['heading']
     detail = request.POST['detail']
     value =request.POST['value']
 
-    faq = FAQ(
+    faq = FAQ.objects.create(
         heading = heading,
         detail = detail,
         value = value
@@ -21,8 +19,9 @@ def Create_FAQ(request):
     return Response({"FAQ created successfully"})
 
 @api_view(["PUT"])
-def Update_FAQ(request, id):
-    faq = FAQ.objects.get(id=id )
+def UpdateFAQ(request):
+    idd = request.GET.get("id")
+    faq = FAQ.objects.get(id=idd )
     heading = request.POST.get('heading')
     detail = request.POST.get('detail')
     value =request.POST.get('value')
@@ -45,8 +44,9 @@ def FAQList(request):
 
 
 @api_view(["DELETE"])
-def delete_faq(request, id):
-    faq = FAQ.objects.get(id=id )
+def DeleteFAQ(request):
+    idd = request.GET.get("id")
+    faq = FAQ.objects.get(id=idd )
     faq.delete()
     return Response({"FAQ Deleted Successfully"})
 

@@ -21,4 +21,11 @@ urlpatterns = [
      path("get-user-detail/",views.GetUserDetail, name="get_user_detail"),
      path("update-user-detail/",views.UpdateUserDetail, name="update_user_detail"),
      path('games/', views.game_list, name='game_list'),
+     path('organization-players/', views.organization_players, name='organization_players'),
+     path('all-players/', views.all_players, name='all_players'),
+     path('request-player/', views.request_player, name='request_player'),
+     path('my-requests/', views.my_requests, name='my_requests'),
+     path('accept-request/', views.accept_request, name='accept_request'),
+     path('delete-request/', views.delete_request, name='delete_request'),
+     path('reject-request/', views.reject_request, name='reject_request'),
 ]

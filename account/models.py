@@ -62,15 +62,27 @@ class Organizer(models.Model):
 class Organization(models.Model):
     user = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
     organization_name = models.CharField(max_length=255,unique=True,blank=True)
+    players = models.ManyToManyField(UserProfile,related_name="organization_players")
 
     def __str__(self):
         return self.organization_name
-    
-class Game(models.Model):
-    name = models.CharField(max_length=100)
-    image = models.ImageField(upload_to='meddia/images/game_by_admin')
+
+class PlayerRequest(models.Model):
+    STARTED_BY_CHOICES = (
+        ('Player','Player'),
+        ('Organization','Organization'),
+    )
+    STATUS_CHOICES = (
+        ('Requested','Requested'),
+        ('Accepted','Accepted'),
+        ('Rejected','Rejected'),
+    )
+    player = models.ForeignKey(UserProfile,on_delete=models.DO_NOTHING,related_name="player_request")
+    organization = models.ForeignKey(Organization,on_delete=models.DO_NOTHING,related_name="organization_request")
+    request_date = models.DateTimeField(auto_now_add=True)
+    request_started_by = models.CharField(max_length=500,choices=STARTED_BY_CHOICES,default='Organization')
+    request_status = models.CharField(max_length=500,choices=STATUS_CHOICES,default='Requested')
+    remarks = models.TextField(blank=True)
 
     def __str__(self):
-        return self.name
-
-
+        return self.organization.organization_name
