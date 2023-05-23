@@ -15,12 +15,12 @@ def CreateOurTeam(request):
     name = request.POST.get('name')
     post = request.POST.get('post')
     image = request.POST.get('image')
-    facebook_link = request.POST.get('facebook_link')
-    instagram_link = request.POST.get('instagram_link')
-    twitch_link = request.POST.get('twitch_link')
-    twitter_link = request.POST.get('twitter_link')
-    discord_link = request.POST.get('discord_link')
-    linkedin_link = request.POST.get('linkedin_link')
+    facebook_link = request.POST.get('facebook_link'," ")
+    instagram_link = request.POST.get('instagram_link'," ")
+    twitch_link = request.POST.get('twitch_link'," ")
+    twitter_link = request.POST.get('twitter_link'," ")
+    discord_link = request.POST.get('discord_link'," ")
+    linkedin_link = request.POST.get('linkedin_link'," ")
 
     team = OurTeam.objects.create(
         name = name,
