@@ -16,7 +16,7 @@ from rest_framework import status
 
 
 @api_view(['POST'])
-def Create_Article_Category(request):
+def create_article_category(request):
     category_name = request.data.get('category_name')
     # Create a new ArticleCategory instance
     category = ArticleCategory(
@@ -27,7 +27,7 @@ def Create_Article_Category(request):
     return Response({'success': "Successfully created Article Category"})
 
 @api_view(['PUT'])
-def Update_Article_Category(request, category_id):
+def update_article_category(request, category_id):
     category = get_object_or_404(ArticleCategory, id=category_id)
     category_name = request.data.get('category_name')
     category.category_name = category_name
@@ -36,13 +36,13 @@ def Update_Article_Category(request, category_id):
     return Response({'success': "Successfully updated Article Category"})
 
 @api_view(['DELETE'])
-def Delete_Article_Category(request, category_id):
+def delete_article_category(request, category_id):
     category = get_object_or_404(ArticleCategory, id=category_id)
     category.delete()
     return Response({'success': "Successfully deleted Article Category"})
 
 @api_view(['GET'])
-def Get_Category_Tag(request):
+def get_category_tag(request):
     category = ArticleCategory.objects.all()
     category_serializers = ArticleCategorySerializer(category, many=True)
     tag = Tag.objects.all()
@@ -50,14 +50,14 @@ def Get_Category_Tag(request):
     return Response({"categories":category_serializers.data,"tags":tag_serializers.data})
 
 @api_view(['GET'])
-def Article_Category_Detail(request, slug):
+def article_category_detail(request, slug):
     article_category = ArticleCategory.objects.get(slug=slug)
     serializer = ArticleCategorySerializer(article_category)
     return Response(serializer.data)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def CreateArticle(request):
+def create_article(request):
     slug = request.POST.get('slug')
     thumbnail_image = request.FILES.get('thumbnail_image')
     thumbnail_image_alt_description = request.POST.get('thumbnail_image_alt_description')
@@ -142,7 +142,7 @@ def create_comment(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def UpdateArticle(request):
+def update_article(request):
     # Retrieve the article instance
     article_id = int(request.POST.get('id'))
     article = get_object_or_404(Article, id=article_id)
@@ -194,7 +194,7 @@ def UpdateArticle(request):
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
-def DeleteArticle(request):
+def delete_article(request):
     article_slug = request.GET.get("slug")
     article = get_object_or_404(Article, slug=article_slug)
 
@@ -207,7 +207,7 @@ def DeleteArticle(request):
     return Response({'success': "Sucessfully Deleted Article"})
 
 @api_view(["GET"])
-def RetriveArticles(request):
+def retrive_articles(request):
     articles = Article.objects.all()
     articles_serializers = ArticleSerializer(articles, many = True)
 
@@ -217,7 +217,7 @@ def RetriveArticles(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def RetriveArticlesAuthor(request):
+def retrive_articles_author(request):
 
     user = request.user.id
     user_profile = UserProfile.objects.get(id=user)
@@ -229,7 +229,7 @@ def RetriveArticlesAuthor(request):
     })
 
 @api_view(['GET'])
-def Article_Detail(request):
+def article_detail(request):
     slug = request.GET.get("slug")
     article = Article.objects.get(slug=slug)
     comments = Comment.objects.filter(article=article,parent_comment__isnull=True)
@@ -238,20 +238,20 @@ def Article_Detail(request):
     return Response({'post': serializer.data, 'comments': comments_serializer.data})
 
 @api_view(['GET'])
-def FeaturedArticles(request):
+def featured_articles(request):
     featured_articles = Article.objects.filter(is_featured=True).order_by('-id')[:10]
     serializer = [ArticleSerializer(article).data for article in featured_articles]
     return Response({'featured_articles': serializer})  
 
 
 @api_view(["GET"])
-def PopularArticles(request):
+def popular_articles(request):
     popular_articles = Article.objects.filter(is_popular=True).order_by('-created_at')[:5]
     popular_articles_data = [ArticleSerializer(article).data for article in popular_articles]
     return Response(popular_articles_data)
 
 @api_view(['POST'])
-def Create_Tag(request):
+def create_tag(request):
     tag_name = request.data.get('tag_name')
     # Create a new tag instance
     tag = Tag(
@@ -263,13 +263,13 @@ def Create_Tag(request):
     return Response({'success': "Successfully created Tag"})
 
 @api_view(['GET'])
-def Get_Tag(request):
+def get_tag(request):
     tag = Tag.objects.all()
     serializers = TagSerializer(tag, many=True)
     return Response(serializers.data)
 
 @api_view(['PUT'])
-def Update_Tag(request, tag_id):
+def update_tag(request, tag_id):
     tag = get_object_or_404(Tag, id=tag_id)
     tag_name = request.data.get('tag_name')
     
@@ -278,7 +278,7 @@ def Update_Tag(request, tag_id):
     tag.save()
     return Response({'success': "Successfully updated Tag"})
 
-def Delete_Tag(request, tag_id):
+def delete_tag(request, tag_id):
     # Retrieve the article to be deleted
     tag = get_object_or_404(Tag, id=tag_id)
 

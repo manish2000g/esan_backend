@@ -1,10 +1,10 @@
 from django.urls import path
-from .views import Create_Event, Delete_Event, EventList, Update_Event,CreateTeam
+from .views import create_event, create_team, delete_event, event_list, update_event 
 
 urlpatterns = [
-    path('create_event/', Create_Event, name='create_event'),
-    path('update-event/<int:pk>/', Update_Event, name='update_event'),
-    path('events/', EventList, name='events'),
-    path('delete-event/<int:pk>/', Delete_Event, name='delete_event'),
-    path('create-team/', CreateTeam, name='create_team'),
+    path('create_event/', create_event, name='create_event'),
+    path('update-event/', update_event, name='update_event'),
+    path('events/', event_list, name='events'),
+    path('delete-event/', delete_event, name='delete_event'),
+    path('create-team/', create_team, name='create_team'),
 ]

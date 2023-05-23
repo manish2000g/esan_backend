@@ -19,7 +19,7 @@ ALLOWED_HOSTS = ['*']
 
 
 # Application definition
-CSRF_TRUSTED_ORIGINS =['https://esan.hikingbees.com','http://localhost:8081','https://287e-111-119-49-217.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS =['https://esan.hikingbees.com','http://localhost:8081','https://1449-111-119-49-217.ngrok-free.app']
 
 INSTALLED_APPS = [
     'jazzmin',
@@ -75,24 +75,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'esan_backend.wsgi.application'
 
-""" DATABASES = {
+DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
-} """
+} 
 
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "esan",
-        "USER": "vishal",
-        "PASSWORD": "DatabaseUserPassword",
-        "HOST": "localhost",
-        "PORT": "",
-    }
-}
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql_psycopg2",
+#         "NAME": "esan",
+#         "USER": "vishal",
+#         "PASSWORD": "DatabaseUserPassword",
+#         "HOST": "localhost",
+#         "PORT": "",
+#     }
+# }
 
 
 # Password validation
