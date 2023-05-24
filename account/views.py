@@ -68,7 +68,7 @@ class ChangePasswordView(generics.UpdateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
-def VerifyUserProfile(request):
+def verify_user_profile(request):
     userid = request.GET.get("user")
     userpr = UserProfile.objects.get(id=userid)
     userpr.is_verified = True
@@ -77,7 +77,7 @@ def VerifyUserProfile(request):
  
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def GetUserProfileDetail(request):
+def get_user_profile_detail(request):
     user = request.user
     users_ser = UserProfileDetailSerializer(user)
     return Response({
@@ -85,7 +85,7 @@ def GetUserProfileDetail(request):
     },status=200)
 
 @api_view(['POST'])
-def CreateUserProfile(request):
+def create_user_profile(request):
     first_name = request.POST['first_name']
     last_name = request.POST['last_name']
     email = request.POST['email']
@@ -142,7 +142,7 @@ def CreateUserProfile(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def GetUserProfile(request):
+def get_user_profile(request):
     user = request.user
     if user.is_verified:
         data = {
@@ -314,13 +314,13 @@ def reject_request(request):
     return Response({"success":"Request Rejected"},status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-def GetUsers(request):
+def get_users(request):
     users = UserProfile.objects.all()
     users_serializer = UserProfileDetailSerializer(users,many=True)
     return Response({"users":users_serializer.data},status=200)
 
 @api_view(['GET'])
-def GetUserDetail(request):
+def get_user_detail(request):
     username = request.GET.get("name")
     user = UserProfile.objects.get(username=username)
     users_serializer = UserProfileDetailSerializer(user)
@@ -345,7 +345,7 @@ def GetUserDetail(request):
         return Response({"user":users_serializer.data},status=200)
 
 @api_view(['POST'])
-def UpdateUserDetail(request):
+def update_user_detail(request):
     username = request.POST.get("username")
     user = UserProfile.objects.get(username=username)
 
