@@ -34,10 +34,11 @@ class Team(models.Model):
     team_name = models.CharField(max_length=500)
     team_image = models.FileField()
     game = models.ForeignKey(Game,on_delete=models.CASCADE)
-    team_type = models.CharField(max_length=500,choices=TEAM_TYPE_CHOICES)
+    team_type = models.CharField(max_length=500,choices=TEAM_TYPE_CHOICES,default="Squad")
     players = models.ManyToManyField(UserProfile,blank=True,related_name='players')
     manager = models.ForeignKey(UserProfile,on_delete=models.DO_NOTHING,related_name='manager')
     organization = models.ForeignKey(Organization,on_delete=models.DO_NOTHING)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self) -> str:
         return self.team_name

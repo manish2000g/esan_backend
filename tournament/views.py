@@ -1,6 +1,8 @@
 from tournament.serializers import EventSerializer, TeamSerializer
 from .models import Event,Team,Game
 from account.models import UserProfile,Organization,Organizer,BlogWriter
+from account.serializers import UserProfileSerializer
+from .serializers import GameSerializer,GameSmallSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -62,6 +64,20 @@ def delete_event(request):
     event.delete()
     return Response({"success": "Event Deleted Successfully"})
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def create_team_initials(request):
+    user = request.user
+    organization = Organization.objects.get(user=user)
+    players = organization.players.all()
+    teams = Team.objects.filter(organization=organization)
+    free_players = players.exclude(id__in=teams.values('players'))
+    free_players_ser = UserProfileSerializer(free_players,many=True)
+    gamess = Game.objects.all()
+    gamess_serializer = GameSmallSerializer(gamess,many=True)
+    return Response({"free_players":free_players_ser.data,"games":gamess_serializer.data},status=status.HTTP_200_OK)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_team(request):
@@ -70,46 +86,106 @@ def create_team(request):
         players = request.POST.getlist("players")
         manager = request.POST.get("manager")
         team_name = request.POST.get("team_name")
-        team_image = request.POST.get("team_name")
+        team_image = request.POST.get("team_image")
         game_id = request.POST.get("game_id")
-        organization = Organization.objects.get(user=user)
-        gamee = Game.objects.get(id=game_id)
-        teamm = Team.objects.create(team_name=team_name,team_image=team_image,game=gamee,organization=organization,manager=manager)
-        for player in players :
-            pll = UserProfile.objects.get(id=player)
-            teamm.players.add(pll)
-        teamm.save()
-        return Response({"success":"Team Created"},status=status.HTTP_200_OK)
-    else:
-        return Response({"error":"Unauthourized for creating team"},status=status.HTTP_401_UNAUTHORIZED)
-    
+        team_type = request.POST.get("team_type", "Squad")  # Default value set to "Squad" if not provided
 
-@api_view(['GET'])
+        organization = Organization.objects.get(user=user)
+        game = Game.objects.get(id=game_id)
+        manager_profile = UserProfile.objects.get(id=manager)
+
+        team = Team.objects.create(
+            team_name=team_name,
+            team_image=team_image,
+            game=game,
+            organization=organization,
+            manager=manager_profile,
+            team_type=team_type
+        )
+
+        players_to_add = UserProfile.objects.filter(id__in=players)
+        team.players.set(players_to_add)
+
+        return Response({"success": "Team created"}, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"error": "Unauthorized for creating a team"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def retrieve_team(request, id):
-    team = Team.objects.get(id=id)
-    serializer = TeamSerializer(team)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-    
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-def update_team(request, id):
+def update_team(request):
     user = request.user
-    team = Team.objects.get(id=id)
+    team_id = request.GET.get("id")
+
+    try:
+        team = Team.objects.get(id=team_id)
+    except Team.DoesNotExist:
+        return Response({"error": "Team does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
     if user.role == "Organization":
+        players = request.POST.getlist("players")
+        manager = request.POST.get("manager")
         team_name = request.POST.get("team_name")
         team_image = request.POST.get("team_image")
-        manager = request.POST.get("manager")
+        game_id = request.POST.get("game_id")
+        team_type = request.POST.get("team_type", team.team_type)  # Preserve existing value if not provided
 
-        team.team_name = team_name 
-        team.team_image = team_image 
-        team.manager = manager 
+        game = Game.objects.get(id=game_id)
+        manager_profile = UserProfile.objects.get(id=manager)
+
+        team.players.clear()
+        players_to_add = UserProfile.objects.filter(id__in=players)
+        team.players.set(players_to_add)
+
+        team.team_name = team_name
+        team.team_image = team_image
+        team.manager = manager_profile
+        team.game = game
+        team.team_type = team_type
         team.save()
 
         return Response({"success": "Team updated"}, status=status.HTTP_200_OK)
     else:
         return Response({"error": "Unauthorized to update the team"}, status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def delete_team(request):
+    user = request.user
+    team_id = request.POST.get("id")
+
+    try:
+        team = Team.objects.get(id=team_id)
+    except Team.DoesNotExist:
+        return Response({"error": "Team does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+    if user.role != "Organization":
+        return Response({"error": "Unauthorized to delete the team"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    team.delete()
+
+    return Response({"success": "Team deleted"}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_my_team(request):
+    user = request.user
+    organization = Organization.objects.get(user=user)
+    myteams = Team.objects.filter(organization=organization)
+    gamess = Game.objects.all()
+    gamess_serializer = GameSmallSerializer(gamess,many=True)
+    myteams_serializer = TeamSerializer(myteams,many=True)
+    return Response({"teams":myteams_serializer.data,"games":gamess_serializer.data},status=status.HTTP_200_OK)
+    
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def retrieve_team(request):
+    id = request.GET.get("id")
+    team = Team.objects.get(id=id)
+    serializer = TeamSerializer(team)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['DELETE'])

@@ -12,10 +12,10 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
         Token.objects.create(user=instance)
 
 
-@receiver(pre_delete, sender=Player)
+""" @receiver(pre_delete, sender=Player)
 @receiver(pre_delete, sender=BlogWriter)
 @receiver(pre_delete, sender=Organizer)
 @receiver(pre_delete, sender=Organization)
 def delete_profile_picture(sender, instance, **kwargs):
     if hasattr(instance, 'profile_picture') and instance.profile_picture:
-        instance.profile_picture.delete(False)
+        instance.profile_picture.delete(False) """

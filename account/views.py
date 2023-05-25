@@ -3,7 +3,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from .models import BlogWriter, Organization, Organizer, Player, UserProfile,PlayerRequest
 from tournament.models import Team,Game
-from tournament.serializers import TeamSerializer,GameSerializer
+from tournament.serializers import GameSerializer,TeamOrgSerializer
 from .serializers import UserProfileDetailSerializer,PlayerSerializer,BlogWritterSerializer,OrganizerSerializer,OrganizationSerializer,ChangePasswordSerializer,PlayerRequestSerializer,UserProfileSerializer
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -217,7 +217,7 @@ def organization_players(request):
         organization = Organization.objects.get(user=user)
         players = organization.players.all()
         teams = Team.objects.filter(organization=organization)
-        teams_ser = TeamSerializer(teams,many=True)
+        teams_ser = TeamOrgSerializer(teams,many=True)
         free_players = players.exclude(id__in=teams.values('players'))
         free_players_ser = UserProfileSerializer(free_players,many=True)
         return Response({"free_players":free_players_ser.data,"teams":teams_ser.data}, status=201)
@@ -236,7 +236,7 @@ def all_players(request):
         playerreqs = PlayerRequest.objects.filter(organization=orgg,request_status="Requested").values_list("player")
         all_prss = PlayerRequest.objects.filter(organization=orgg)
         all_prss_ser = PlayerRequestSerializer(all_prss,many=True)
-        free_players = players.exclude(id__in=teams.values('players') or organizations.values('players')).exclude(id__in=playerreqs)
+        free_players = players.exclude(id__in=teams.values('players')).exclude(id__in=organizations.values('players')).exclude(id__in=playerreqs)
         free_players_ser = UserProfileSerializer(free_players,many=True)
         return Response({"free_players":free_players_ser.data,"player_requests":all_prss_ser.data}, status=201)
     except:
@@ -267,12 +267,12 @@ def request_player(request):
 def my_requests(request):
     user = request.user
     if user.role == "Player":
-        player_requests = PlayerRequest.objects.filter(player=user)
+        player_requests = PlayerRequest.objects.filter(player=user,request_status="Requested")
         player_requests_ser = PlayerRequestSerializer(player_requests,many=True)
         return Response({"player_requests":player_requests_ser.data},status=status.HTTP_200_OK)
     elif user.role == "Organization":
         orgg = Organization.objects.get(user=user)
-        player_requests = PlayerRequest.objects.filter(organization=orgg)
+        player_requests = PlayerRequest.objects.filter(organization=orgg,request_status="Requested")
         player_requests_ser = PlayerRequestSerializer(player_requests,many=True)
         return Response({"player_requests":player_requests_ser.data},status=status.HTTP_200_OK)
     else:
@@ -288,12 +288,13 @@ def accept_request(request):
     orgg = player_request.organization
     player = player_request.player
     orgg.players.add(player)
+    orgg.save()
     player_request.request_status = "Accepted"
     player_request.remarks = remarks
     player_request.save()
     return Response({"success":"Request Accepted"},status=status.HTTP_200_OK)
 
-@api_view(['POST'])
+@api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_request(request):
     reqid = request.GET.get("id")

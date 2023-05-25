@@ -8,6 +8,11 @@ class EliminationModeSerializer(serializers.ModelSerializer):
         model = EliminationMode
         fields = ('id', 'elimination_mode')
 
+class GameSmallSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Game
+        fields = ('id', 'game_name','game_type')
+
 class GameSerializer(serializers.ModelSerializer):
     elimination_modes = EliminationModeSerializer(many=True)
 
@@ -15,7 +20,7 @@ class GameSerializer(serializers.ModelSerializer):
         model = Game
         fields = ('id', 'game_name', 'game_image', 'game_type', 'elimination_modes')
 
-class TeamSerializer(serializers.ModelSerializer):
+class TeamOrgSerializer(serializers.ModelSerializer):
     players = UserProfileSerializer(many=True)
     manager = UserProfileSerializer(read_only=True)
     game = GameSerializer(read_only=True)
@@ -23,7 +28,16 @@ class TeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Team
-        fields = ('id', 'team_name', 'organization','team_image', 'game', 'team_type', 'players', 'manager')
+        fields = ('id', 'team_name','organization','team_image', 'game', 'team_type', 'players', 'manager','is_active')
+
+class TeamSerializer(serializers.ModelSerializer):
+    players = UserProfileSerializer(many=True)
+    manager = UserProfileSerializer(read_only=True)
+    game = GameSerializer(read_only=True)
+
+    class Meta:
+        model = Team
+        fields = ('id', 'team_name','team_image', 'game', 'team_type', 'players', 'manager','is_active')
 
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
