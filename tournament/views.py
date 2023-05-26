@@ -93,10 +93,9 @@ def all_event_list(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def event_detail(request):
-    pk = request.GET.get('id')
-    event = Event.objects.get(id = pk)
+    slug = request.GET.get('slug')
+    event = Event.objects.get(slug = slug)
     event_serializer = EventSerializer(event)
     faq = EventFAQ.objects.filter(event = event)
     faq_serializer = EventFAQSerializer(faq, many = True)
@@ -104,8 +103,8 @@ def event_detail(request):
     sponsor_serializer = EventSponsorSerializer(sponsor, many = True)
     return Response({
         'event': event_serializer.data,
-        'faq': faq_serializer.data,
-        'sponsor': sponsor_serializer.data
+        'faqs': faq_serializer.data,
+        'sponsors': sponsor_serializer.data
     })
 
 

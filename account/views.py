@@ -175,7 +175,7 @@ def get_user_profile(request):
             organizer = Organizer.objects.get(user=user)
             data['organizer'] = {
                 'id': organizer.id,
-                'organization_name': organizer.organization_name,
+                'organizer_name': organizer.organizer_name,
                 'description': organizer.user.bio,
                 'website': organizer.user.website_link,
                 'address': organizer.user.address

@@ -43,23 +43,23 @@ class EventSmallSerializer(serializers.ModelSerializer):
     organizer = OrganizerSerializer(read_only=True)
     class Meta:
         model = Event
-        fields = ('id', 'organizer', 'event_name', 'event_start_date', 'event_end_date','event_thumbnail','event_thumbnail_alt_description')
+        fields = ('id', 'organizer', 'event_name', 'event_start_date', 'event_end_date','event_thumbnail','event_thumbnail_alt_description','slug')
 
 class EventSerializer(serializers.ModelSerializer):
     organizer = OrganizerSerializer(read_only=True)
     class Meta:
         model = Event
-        fields = ('id', 'organizer', 'event_name', 'event_description', 'event_start_date', 'event_end_date','event_thumbnail','event_thumbnail_alt_description')
+        fields = ('id', 'organizer', 'event_name', 'event_description', 'event_start_date', 'event_end_date','event_thumbnail','event_thumbnail_alt_description','slug')
 
 class EventFAQSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventFAQ
-        fields = ('id', 'event', 'value', 'heading', 'detail')
+        fields = ('id', 'value', 'heading', 'detail')
 
 class EventSponsorSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventSponsor
-        fields = ('id', 'event', 'sponsor_name', 'sponsorship_category', 'sponsor_banner')
+        fields = ('id', 'sponsor_name', 'sponsorship_category', 'sponsor_banner','order')
 
 class TournamentFAQSerializer(serializers.ModelSerializer):
     class Meta:

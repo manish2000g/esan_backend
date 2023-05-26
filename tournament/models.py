@@ -45,6 +45,7 @@ class Team(models.Model):
 
 class Event(models.Model):
     organizer = models.ForeignKey(Organizer,on_delete=models.CASCADE)
+    slug = models.SlugField(max_length=700)
     event_name = models.CharField(max_length=700)
     event_thumbnail = models.FileField(blank=True)
     event_thumbnail_alt_description = models.CharField(max_length=500,blank=True)
@@ -71,6 +72,7 @@ class EventSponsor(models.Model):
     sponsor_name = models.CharField(max_length=500)
     sponsorship_category = models.CharField(max_length=500)
     sponsor_banner = models.FileField()
+    order = models.IntegerField(default=0)
 
     def __str__(self) -> str:
         return self.sponsor_name
