@@ -29,6 +29,7 @@ class BlogWritterSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class OrganizerSerializer(serializers.ModelSerializer):
+    user = UserProfileSerializer(read_only=True)
     class Meta:
         model = Organizer
         fields = '__all__'

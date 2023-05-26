@@ -46,6 +46,8 @@ class Team(models.Model):
 class Event(models.Model):
     organizer = models.ForeignKey(Organizer,on_delete=models.CASCADE)
     event_name = models.CharField(max_length=700)
+    event_thumbnail = models.FileField(blank=True)
+    event_thumbnail_alt_description = models.CharField(max_length=500,blank=True)
     event_description = RichTextField(blank=True)
     event_start_date = models.DateTimeField()
     event_end_date = models.DateTimeField()

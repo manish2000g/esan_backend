@@ -1,9 +1,10 @@
 from django.urls import path
-from .views import create_event, create_event_faq, create_event_sponsor, create_team, create_tournament, create_tournament_faq, create_tournament_sponsor, delete_event, delete_event_faq, delete_event_sponsor, delete_tournament, delete_tournament_faq, delete_tournament_sponsor, event_detail, event_faq, event_faq_list, event_list, delete_team, event_sponsor, event_sponsor_list,retrieve_team, tournament_detail, tournament_faq, tournament_faq_list, tournament_sponsor, tournament_sponsor_list, tournaments_list,update_event,get_my_team, update_event_faq, update_event_sponsor,update_team,create_team_initials, update_tournament, update_tournament_faq, update_tournament_sponsor
+from .views import create_event, create_event_faq, all_event_list,create_event_sponsor, create_team, create_tournament, create_tournament_faq, create_tournament_sponsor, delete_event, delete_event_faq, delete_event_sponsor, delete_tournament, delete_tournament_faq, delete_tournament_sponsor, event_detail, event_faq, event_faq_list, event_list, delete_team, event_sponsor, event_sponsor_list,retrieve_team, tournament_detail, tournament_faq, tournament_faq_list, tournament_sponsor, tournament_sponsor_list, tournaments_list,update_event,get_my_team, update_event_faq, update_event_sponsor,update_team,create_team_initials, update_tournament, update_tournament_faq, update_tournament_sponsor
 
 urlpatterns = [
     path('create-event/', create_event, name='create_event'),
     path('update-event/', update_event, name='update_event'),
+    path('all-events/', all_event_list, name='all_event_list'),
     path('events/', event_list, name='events'),
     path('event-detail/', event_detail, name= 'event_detail'),
     path('delete-event/', delete_event, name='delete_event'),
@@ -19,7 +20,7 @@ urlpatterns = [
     path('event-sponsor', event_sponsor, name='event_sponsor'),
     path('get-my-team/', get_my_team, name='get_my_team'),
     path('create-team-initials/', create_team_initials, name='create_team_initials'),
-    path('retrive-team-detail/', retrieve_team, name='retrieve_team'),
+    path('retrieve-team-detail/', retrieve_team, name='retrieve_team'),
     path('create-team/', create_team, name='create_team'),
     path('update-team/', update_team, name='create_team'),
     path('delete-team/', delete_team, name='delete_team'),

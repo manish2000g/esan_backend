@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (EliminationMode, Game, Team, Event, EventFAQ, EventSponsor,
                      Tournament, TournamentFAQ, TournamentSponsor, TournamentStreams, Stage,SoloTournamentRegistration,TeamTournamentRegistration,SoloGroup,TeamGroup,SoloMatch,TeamMatch)
-from account.serializers import UserProfileSerializer,OrganizationSerializer
+from account.serializers import UserProfileSerializer,OrganizationSerializer,OrganizerSerializer
 
 class EliminationModeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,10 +39,17 @@ class TeamSerializer(serializers.ModelSerializer):
         model = Team
         fields = ('id', 'team_name','team_image', 'game', 'team_type', 'players', 'manager','is_active')
 
-class EventSerializer(serializers.ModelSerializer):
+class EventSmallSerializer(serializers.ModelSerializer):
+    organizer = OrganizerSerializer(read_only=True)
     class Meta:
         model = Event
-        fields = ('id', 'organizer', 'event_name', 'event_description', 'event_start_date', 'event_end_date')
+        fields = ('id', 'organizer', 'event_name', 'event_start_date', 'event_end_date','event_thumbnail','event_thumbnail_alt_description')
+
+class EventSerializer(serializers.ModelSerializer):
+    organizer = OrganizerSerializer(read_only=True)
+    class Meta:
+        model = Event
+        fields = ('id', 'organizer', 'event_name', 'event_description', 'event_start_date', 'event_end_date','event_thumbnail','event_thumbnail_alt_description')
 
 class EventFAQSerializer(serializers.ModelSerializer):
     class Meta:

@@ -77,8 +77,8 @@ class PlayerRequest(models.Model):
         ('Accepted','Accepted'),
         ('Rejected','Rejected'),
     )
-    player = models.ForeignKey(UserProfile,on_delete=models.DO_NOTHING,related_name="player_request")
-    organization = models.ForeignKey(Organization,on_delete=models.DO_NOTHING,related_name="organization_request")
+    player = models.ForeignKey(UserProfile,on_delete=models.CASCADE,related_name="player_request")
+    organization = models.ForeignKey(Organization,on_delete=models.CASCADE,related_name="organization_request")
     request_date = models.DateTimeField(auto_now_add=True)
     request_started_by = models.CharField(max_length=500,choices=STARTED_BY_CHOICES,default='Organization')
     request_status = models.CharField(max_length=500,choices=STATUS_CHOICES,default='Requested')
