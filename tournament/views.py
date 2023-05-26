@@ -1,8 +1,7 @@
-from tournament.serializers import EventSerializer, TeamSerializer
-from .models import Event,Team,Game
-from account.models import UserProfile,Organization,Organizer,BlogWriter
+from .models import Event, EventFAQ, EventSponsor,Team,Game, Tournament, TournamentFAQ, TournamentSponsor
+from account.models import Organizer, UserProfile,Organization
 from account.serializers import UserProfileSerializer
-from .serializers import GameSerializer,GameSmallSerializer
+from .serializers import EventFAQSerializer, EventSponsorSerializer,GameSmallSerializer, TournamentFAQSerializer, TournamentSerializer, TournamentSponsorSerializer, EventSerializer, TeamSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -12,15 +11,18 @@ from rest_framework.decorators import (
 )
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def create_event(request):
-    organizer_id = request.POST.get('organizer_id')
+    user = request.user
     event_name = request.POST.get('event_name')
     event_description = request.POST.get('event_description', '')
     event_start_date = request.POST.get('event_start_date')
     event_end_date = request.POST.get('event_end_date')
 
+    organizer = Organizer.objects.get(user=user)
+
     event = Event.objects.create(
-        organizer_id=organizer_id,
+        organizer=organizer,
         event_name=event_name,
         event_description=event_description,
         event_start_date=event_start_date,
@@ -31,16 +33,19 @@ def create_event(request):
 
 
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated])
 def update_event(request):
-    idd = request.GET.get("id")
-    event = Event.objects.get( id=idd)
-    organizer_id = request.POST.getlist('organizer_id')
+    pk = request.GET.get("id")
+    event = Event.objects.get( id=pk)
+    user = request.user
     event_name = request.POST.get('event_name')
     event_description = request.POST.get('event_description')
     event_start_date = request.POST.get('event_start_date')
     event_end_date = request.POST.get('event_end_date')
 
-    event.organizer_id = organizer_id
+    if event.organizer.user != user:
+        return Response({"error": "You are not authorized to update this event"}, status=status.HTTP_403_FORBIDDEN)
+
     event.event_name = event_name
     event.event_description = event_description
     event.event_start_date = event_start_date
@@ -48,6 +53,7 @@ def update_event(request):
 
     event.save()
     return Response({"success": "Successfully updated Event"})
+
 
 @api_view(["GET"])
 def event_list(request):
@@ -57,12 +63,175 @@ def event_list(request):
         "Event": serializers.data
     })   
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def event_detail(request):
+    pk = request.GET.get('id')
+    event = Event.objects.get(id = pk)
+    event_serializer = EventSerializer(event)
+    faq = EventFAQ.objects.filter(event = event)
+    faq_serializer = EventFAQSerializer(faq, many = True)
+    sponsor = EventSponsor.objects.filter(event = event)
+    sponsor_serializer = EventSponsorSerializer(sponsor, many = True)
+    return Response({
+        'event': event_serializer.data,
+        'faq': faq_serializer.data,
+        'sponsor': sponsor_serializer.data
+    })
+
+
 @api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
 def delete_event(request):
     idd = request.GET.get("id")
     event = Event.objects.get(id=idd)
     event.delete()
     return Response({"success": "Event Deleted Successfully"})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_event_faq(request):
+    event_id = request.POST.get('id')
+    value = request.POST.get('value')
+    heading = request.POST.get('heading')
+    detail = request.POST.get('detail')
+
+    try:
+        event = Event.objects.get(id=event_id)
+    except Event.DoesNotExist:
+        return Response({"error": "Event does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+    faq = EventFAQ.objects.create(
+        event=event,
+        value=value,
+        heading=heading,
+        detail=detail
+    )
+    faq.save()
+
+    return Response({"success": "Event FAQ created successfully"})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_event_faq(request):
+    faq_id = request.POST.get('id')
+    value = request.POST.get('value')
+    heading = request.POST.get('heading')
+    detail = request.POST.get('detail')
+
+    try:
+        faq = EventFAQ.objects.get(id=faq_id)
+    except EventFAQ.DoesNotExist:
+        return Response({"error": "Event FAQ does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+    faq.value = value
+    faq.heading = heading
+    faq.detail = detail
+    faq.save()
+
+    return Response({"success": "Event FAQ updated successfully"})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def event_faq_list(request):
+    event_faq = EventFAQ.objects.all()
+    serializers = EventFAQSerializer(event_faq, many = True)
+    return Response({
+        "event_faqs": serializers.data
+    })  
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def event_faq(request):
+    pk = request.GET.get('id')
+    faq = EventFAQ.objects.get(id = pk)
+    serializer = EventFAQSerializer(faq)
+    return Response(serializer.data)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_event_faq(request):
+    pk = request.GET.get("id")
+    event_faq = EventFAQ.objects.get(id=pk)
+    event_faq.delete()
+    return Response({"success": "EventFAQ deleted successfully"})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def event_sponsor_list(request):
+    event_faq = EventSponsor.objects.all()
+    serializers = EventSponsorSerializer(event_faq, many = True)
+    return Response({
+        "event_sponsors": serializers.data
+    }) 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def event_sponsor(request):
+    pk = request.GET.get('id')
+    sponsor = EventSponsor.objects.get(id = pk)
+    serializer = EventSponsorSerializer(sponsor)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_event_sponsor(request):
+    event_id = request.POST.get('id')
+    sponsor_name = request.POST.get('sponsor_name')
+    sponsorship_category = request.POST.get('sponsorship_category')
+    sponsor_banner = request.FILES.get('sponsor_banner')
+
+    try:
+        event = Event.objects.get(id=event_id)
+    except Event.DoesNotExist:
+        return Response({"error": "Event does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+    sponsor = EventSponsor.objects.create(
+        event=event,
+        sponsor_name=sponsor_name,
+        sponsorship_category=sponsorship_category,
+        sponsor_banner=sponsor_banner
+    )
+    sponsor.save()
+
+    return Response({"success": "Event Sponsor created successfully"})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_event_sponsor(request):
+    sponsor_id = request.POST.get('id')
+    sponsor_name = request.POST.get('sponsor_name')
+    sponsorship_category = request.POST.get('sponsorship_category')
+    sponsor_banner = request.POST.get('sponsor_banner')
+
+    try:
+        sponsor = EventSponsor.objects.get(id=sponsor_id)
+    except EventSponsor.DoesNotExist:
+        return Response({"error": "Event Sponsor does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+    sponsor.sponsor_name = sponsor_name
+    sponsor.sponsorship_category = sponsorship_category
+    sponsor.sponsor_banner = sponsor_banner
+
+    sponsor.save()
+
+    return Response({"success": "Event Sponsor updated successfully"})
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_event_sponsor(request):
+    event_sponsor_id = request.GET.get("id")
+    event_sponsor = EventSponsor.objects.get(id=event_sponsor_id)
+    event_sponsor.delete()
+    return Response({"success": "EventSponsor deleted successfully"})
+    
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -199,4 +368,294 @@ def delete_team(request, id):
         return Response({"success": "Team Deleted"}, status=status.HTTP_200_OK)
     else:
         return Response({"error": "Unauthorized to delete the team"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def tournaments_list(request):
+    tournaments = Tournament.objects.all()
+    serializers = EventSerializer(tournaments, many = True)
+    return Response({
+        "tournaments": serializers.data
+    })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_tournament(request):
+    user = request.user
+    tournament_name = request.POST.get('tournament_name')
+    tournament_logo = request.POST.get('tournament_logo')
+    tournament_mode = request.POST.get('tournament_mode')
+    tournament_participants = request.POST.get('tournament_participants')
+    is_free = request.POST.get('is_free')
+    tournament_fee = request.POST.get('tournament_fee')
+    maximum_no_of_participants = request.POST.get('maximum_no_of_participants')
+    game_id = request.POST.get('id')
+    tournament_description = request.POST.get('tournament_description', '')
+    tournament_rules = request.POST.get('tournament_rules', '')
+    tournament_prize_pool = request.POST.get('tournament_prize_pool', '')
+    registration_opening_date = request.POST.get('registration_opening_date')
+    registration_closing_date = request.POST.get('registration_closing_date')
+    tournament_start_date = request.POST.get('tournament_start_date')
+    tournament_end_date = request.POST.get('tournament_end_date')
+    is_published = request.POST.get('is_published')
+    is_registration_enabled = request.POST.get('is_registration_enabled')
+    accept_registration_automatic = request.POST.get('accept_registration_automatic')
+    contact_email = request.POST.get('contact_email', '')
+    discord_link = request.POST.get('discord_link', '')
+
+    game = Game.objects.get(id = game_id)
+    organizer = Organizer.objects.get(user=user)
+
+    tournament = Tournament.objects.create(
+        organizer=organizer,
+        tournament_name=tournament_name,
+        tournament_logo=tournament_logo,
+        tournament_mode=tournament_mode,
+        tournament_participants=tournament_participants,
+        is_free=is_free,
+        tournament_fee=tournament_fee,
+        maximum_no_of_participants=maximum_no_of_participants,
+        game=game,
+        tournament_description=tournament_description,
+        tournament_rules=tournament_rules,
+        tournament_prize_pool=tournament_prize_pool,
+        registration_opening_date=registration_opening_date,
+        registration_closing_date=registration_closing_date,
+        tournament_start_date=tournament_start_date,
+        tournament_end_date=tournament_end_date,
+        is_published=is_published,
+        is_registration_enabled=is_registration_enabled,
+        accept_registration_automatic=accept_registration_automatic,
+        contact_email=contact_email,
+        discord_link=discord_link,
+    )
+    tournament.save()
+    return Response({"success": "Tournament created successfully"})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def tournament_detail(request):
+    pk = request.GET.get('id')
+    tournament = Tournament.objects.get(id = pk)
+    tournament_serializer = TournamentSerializer(tournament)
+    faq = TournamentFAQ.objects.filter(tournament = tournament)
+    faq_serializer = TournamentFAQSerializer(faq, many = True)
+    sponsor = TournamentSponsor.objects.filter(tournament = tournament)
+    sponsor_serializer = TournamentSponsorSerializer(sponsor, many = True)
+    return Response({
+        'tournament': tournament_serializer.data,
+        'faq': faq_serializer.data,
+        'sponsor': sponsor_serializer.data
+    })
+   
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_tournament(request):
+    pk = request.GET.get("id")
+    tournament = Tournament.objects.get(id=pk)
+    user = request.user
+    tournament_name = request.POST.get('tournament_name')
+    tournament_logo = request.POST.get('tournament_logo')
+    tournament_mode = request.POST.get('tournament_mode')
+    tournament_participants = request.POST.get('tournament_participants')
+    is_free = request.POST.get('is_free')
+    tournament_fee = request.POST.get('tournament_fee')
+    maximum_no_of_participants = request.POST.get('maximum_no_of_participants')
+    game_id = request.POST.get('id')
+    tournament_description = request.POST.get('tournament_description')
+    tournament_rules = request.POST.get('tournament_rules')
+    tournament_prize_pool = request.POST.get('tournament_prize_pool')
+    registration_opening_date = request.POST.get('registration_opening_date')
+    registration_closing_date = request.POST.get('registration_closing_date')
+    tournament_start_date = request.POST.get('tournament_start_date')
+    tournament_end_date = request.POST.get('tournament_end_date')
+    is_published = request.POST.get('is_published')
+    is_registration_enabled = request.POST.get('is_registration_enabled')
+    accept_registration_automatic = request.POST.get('accept_registration_automatic')
+    contact_email = request.POST.get('contact_email')
+    discord_link = request.POST.get('discord_link')
+
+    game = Game.objects.get(id = game_id)
+
+    if tournament.organizer.user != user:
+        return Response({"error": "You are not authorized to update this Tournament"}, status=status.HTTP_403_FORBIDDEN)
+
+    tournament.tournament_name = tournament_name
+    tournament.tournament_logo = tournament_logo
+    tournament.tournament_mode = tournament_mode
+    tournament.tournament_participants = tournament_participants
+    tournament.is_free = is_free
+    tournament.tournament_fee = tournament_fee
+    tournament.maximum_no_of_participants = maximum_no_of_participants
+    tournament.game = game
+    tournament.tournament_description = tournament_description
+    tournament.tournament_rules = tournament_rules
+    tournament.tournament_prize_pool = tournament_prize_pool
+    tournament.registration_opening_date = registration_opening_date
+    tournament.registration_closing_date = registration_closing_date
+    tournament.tournament_start_date = tournament_start_date
+    tournament.tournament_end_date = tournament_end_date
+    tournament.is_published = is_published
+    tournament.is_registration_enabled = is_registration_enabled
+    tournament.accept_registration_automatic = accept_registration_automatic
+    tournament.contact_email = contact_email
+    tournament.discord_link = discord_link
+
+    tournament.save()
+    return Response({"success": "Tournament updated successfully"})
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_tournament(request):
+    pk = request.GET.get("id")
+    tournament = Tournament.objects.get(id=pk)
+    tournament.delete()
+    return Response({"success": "Tournament deleted successfully"})
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_tournament_sponsor(request):
+    tournament_id = request.POST.get('id')
+    sponsor_name = request.POST.get('sponsor_name')
+    sponsorship_category = request.POST.get('sponsorship_category')
+    sponsor_logo = request.FILES.get('sponsor_logo')
+    sponsor_link = request.POST.get('sponsor_link')
+    sponsor_banner = request.FILES.get('sponsor_banner')
+
+    try:
+        tournament = Tournament.objects.get(id=tournament_id)
+    except Tournament.DoesNotExist:
+        return Response({"error": "Tournament does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+    tournament_sponsor = TournamentSponsor.objects.create(
+        tournament=tournament,
+        sponsor_name=sponsor_name,
+        sponsorship_category=sponsorship_category,
+        sponsor_logo=sponsor_logo,
+        sponsor_link=sponsor_link,
+        sponsor_banner=sponsor_banner
+    )
+    tournament_sponsor.save()
+    return Response({"success": "TournamentSponsor created successfully"})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def tournament_sponsor_list(request):
+    tournament_sponsors = TournamentSponsor.objects.all()
+    serializer = TournamentSponsorSerializer(tournament_sponsors, many=True)
+    return Response({"tournament_sponsors": serializer.data})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def tournament_sponsor(request):
+    pk = request.GET.get('id')
+    sponsor = TournamentSponsor.objects.get(id = pk)
+    serializer = TournamentSponsorSerializer(sponsor)
+    return Response(serializer.data)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_tournament_sponsor(request):
+    sponsor_id = request.POST.get('id')
+    sponsor_name = request.data.get('sponsor_name')
+    sponsorship_category = request.data.get('sponsorship_category')
+    sponsor_logo = request.data.get('sponsor_logo')
+    sponsor_link = request.data.get('sponsor_link')
+    sponsor_banner = request.data.get('sponsor_banner')
+
+    try:
+        tournament_sponsor = TournamentSponsor.objects.get(id=sponsor_id)
+    except TournamentSponsor.DoesNotExist:
+        return Response({"error": "Tournament Sponsor does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+    tournament_sponsor.sponsor_name = sponsor_name
+    tournament_sponsor.sponsorship_category = sponsorship_category
+    tournament_sponsor.sponsor_logo = sponsor_logo
+    tournament_sponsor.sponsor_link = sponsor_link
+    tournament_sponsor.sponsor_banner = sponsor_banner
+
+    tournament_sponsor.save()
+    return Response({"success": "TournamentSponsor updated successfully"}, status=status.HTTP_200_OK)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_tournament_sponsor(request):
+    sponsor_id = request.GET.get("id")
+    tournament_sponsor = TournamentSponsor.objects.get(id=sponsor_id)
+    tournament_sponsor.delete()
+    return Response({"success": "TournamentSponsor deleted successfully"})
+    
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_tournament_faq(request):
+    tournament_id = request.POST.get('id')
+    value = request.POST.get('value')
+    heading = request.POST.get('heading')
+    detail = request.POST.get('detail')
+
+    try:
+        tournament = Tournament.objects.get(id=tournament_id)
+    except Tournament.DoesNotExist:
+        return Response({"error": "Tournament does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+    tournament_faq = TournamentFAQ.objects.create(
+        tournament = tournament,
+        value=value,
+        heading=heading,
+        detail=detail
+    )
+    tournament_faq.save()
+    return Response({"success": "TournamentFAQ created successfully"})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def tournament_faq_list(request):
+    tournament_faqs = TournamentFAQ.objects.all()
+    serializer = TournamentFAQSerializer(tournament_faqs, many=True)
+    return Response({"tournament_faqs": serializer.data})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def tournament_faq(request):
+    pk = request.GET.get('id')
+    faq = TournamentFAQ.objects.get(id = pk)
+    serializer = TournamentFAQSerializer(faq)
+    return Response(serializer.data)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_tournament_faq(request):
+    faq_id = request.data.get('id')
+    value = request.data.get('value')
+    heading = request.data.get('heading')
+    detail = request.data.get('detail')
+
+    try:
+        tournament_faq = TournamentFAQ.objects.get(id=faq_id)
+    except TournamentFAQ.DoesNotExist:
+        return Response({"error": "Tournament FAQ does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+    tournament_faq.value = value
+    tournament_faq.heading = heading
+    tournament_faq.detail = detail
+
+    tournament_faq.save()
+    return Response({"success": "TournamentFAQ updated successfully"}, status=status.HTTP_200_OK)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_tournament_faq(request):
+    faq_id = request.GET.get("id")
+    tournament_faq = TournamentFAQ.objects.get(id=faq_id)
+    tournament_faq.delete()
+    return Response({"success": "TournamentFAQ deleted successfully"})
 
