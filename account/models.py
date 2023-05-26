@@ -54,7 +54,7 @@ class BlogWriter(models.Model):
 
 class Organizer(models.Model):
     user = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
-    organization_name = models.CharField(max_length=255,unique=True,blank=True)
+    organizer_name = models.CharField(max_length=255,unique=True,blank=True)
 
     def __str__(self):
         return self.user.username
