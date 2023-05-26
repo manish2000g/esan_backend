@@ -19,7 +19,7 @@ ALLOWED_HOSTS = ['*']
 
 
 # Application definition
-CSRF_TRUSTED_ORIGINS =['https://esan.hikingbees.com','http://localhost:8081','https://1449-111-119-49-217.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS =['https://esan.hikingbees.com','http://localhost:8081','https://3a3a-103-186-197-133.ngrok-free.app']
 
 
 INSTALLED_APPS = [
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'our_team',
     'newsletter',
     'drf_yasg',
+    'coreapi',
 ]
 
 MIDDLEWARE = [
