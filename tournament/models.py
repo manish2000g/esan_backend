@@ -46,7 +46,7 @@ class Team(models.Model):
 class Event(models.Model):
     organizer = models.ForeignKey(Organizer,on_delete=models.CASCADE)
     slug = models.SlugField(max_length=700)
-    event_name = models.CharField(max_length=700)
+    event_name = models.CharField(max_length=700,unique=True)
     event_thumbnail = models.FileField(blank=True)
     event_thumbnail_alt_description = models.CharField(max_length=500,blank=True)
     event_description = RichTextField(blank=True)
@@ -89,6 +89,7 @@ class Tournament(models.Model):
     )
 
     organizer = models.ForeignKey(Organizer,on_delete=models.CASCADE)
+    event = models.ForeignKey(Event,on_delete=models.CASCADE)
     tournament_name = models.CharField(max_length=700)
     tournament_logo = models.FileField(blank=True)
     tournament_mode = models.CharField(max_length=700,choices=TOURNAMENT_MODE_CHOICES,default='Online')

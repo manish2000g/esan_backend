@@ -21,10 +21,13 @@ def create_event(request):
             return Response({"error": "Only organizers can create events"}, status=status.HTTP_403_FORBIDDEN)
 
         event_name = request.POST.get('event_name')
+        slug = request.POST.get('slug')
+        event_thumbnail = request.FILES.get("event_thumbnail")
+        event_thumbnail_alt_description = request.POST.get("event_thumbnail_alt_description")
         event_description = request.POST.get('event_description', '')
         event_start_date = request.POST.get('event_start_date')
         event_end_date = request.POST.get('event_end_date')
-
+        print(event_thumbnail)
         organizer = Organizer.objects.get(user=user)
 
         event = Event.objects.create(
@@ -33,6 +36,9 @@ def create_event(request):
             event_description=event_description,
             event_start_date=event_start_date,
             event_end_date=event_end_date,
+            event_thumbnail=event_thumbnail,
+            event_thumbnail_alt_description=event_thumbnail_alt_description,
+            slug=slug
         )
         event.save()
         return Response({"success": "Successfully created Event"})
@@ -46,8 +52,8 @@ def create_event(request):
 @permission_classes([IsAuthenticated])
 def update_event(request):
     try:
-        pk = request.GET.get("id")
-        event = Event.objects.get(id=pk)
+        idd = request.POST.get("id")
+        event = Event.objects.get(id=idd)
         user = request.user
 
         # Check if the user is the organizer of the event
@@ -55,11 +61,20 @@ def update_event(request):
             return Response({"error": "You are not authorized to update this event"}, status=status.HTTP_403_FORBIDDEN)
 
         event_name = request.POST.get('event_name')
+        slug = request.POST.get('slug')
+        event_thumbnail = request.FILES.get('event_thumbnail')
+        event_thumbnail_alt_description = request.POST.get("event_thumbnail_alt_description")
         event_description = request.POST.get('event_description')
         event_start_date = request.POST.get('event_start_date')
         event_end_date = request.POST.get('event_end_date')
 
+        print(event_thumbnail)
+
         event.event_name = event_name
+        event.slug = slug
+        if event_thumbnail:
+            event.event_thumbnail = event_thumbnail
+        event.event_thumbnail_alt_description = event_thumbnail_alt_description
         event.event_description = event_description
         event.event_start_date = event_start_date
         event.event_end_date = event_end_date
@@ -111,22 +126,59 @@ def event_detail(request):
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_event(request):
-    idd = request.GET.get("id")
-    event = Event.objects.get(id=idd)
+    slug = request.GET.get("slug")
+    event = Event.objects.get(slug=slug)
     event.delete()
     return Response({"success": "Event Deleted Successfully"})
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_event_faq(request):
+    slug = request.GET.get('slug')
+    try:
+        event = Event.objects.get(slug=slug)
+    except Event.DoesNotExist:
+        return Response({"error": "Event does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+    faq = EventFAQ.objects.filter(event=event)
+    faq_ser = EventFAQSerializer(faq,many=True)
+
+    return Response({"FAQs": faq_ser.data},status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_event_sponsor(request):
+    slug = request.GET.get('slug')
+    try:
+        event = Event.objects.get(slug=slug)
+    except Event.DoesNotExist:
+        return Response({"error": "Event does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+    sponsors = EventSponsor.objects.filter(event=event)
+    sponsors_ser = EventSponsorSerializer(sponsors,many=True)
+
+    return Response({"sponsors": sponsors_ser.data},status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_event_sponsor_detail(request):
+    id = request.GET.get("id")
+    sponsors = EventSponsor.objects.get(id=id)
+    sponsors_ser = EventSponsorSerializer(sponsors)
+
+    return Response({"sponsor_detail": sponsors_ser.data},status=status.HTTP_200_OK)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_event_faq(request):
-    event_id = request.POST.get('id')
+    slug = request.POST.get('slug')
     value = request.POST.get('value')
     heading = request.POST.get('heading')
     detail = request.POST.get('detail')
 
     try:
-        event = Event.objects.get(id=event_id)
+        event = Event.objects.get(slug=slug)
     except Event.DoesNotExist:
         return Response({"error": "Event does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -145,7 +197,6 @@ def create_event_faq(request):
 @permission_classes([IsAuthenticated])
 def update_event_faq(request):
     faq_id = request.POST.get('id')
-    value = request.POST.get('value')
     heading = request.POST.get('heading')
     detail = request.POST.get('detail')
 
@@ -154,7 +205,6 @@ def update_event_faq(request):
     except EventFAQ.DoesNotExist:
         return Response({"error": "Event FAQ does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
-    faq.value = value
     faq.heading = heading
     faq.detail = detail
     faq.save()
@@ -162,59 +212,26 @@ def update_event_faq(request):
     return Response({"success": "Event FAQ updated successfully"})
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def event_faq_list(request):
-    event_faq = EventFAQ.objects.all()
-    serializers = EventFAQSerializer(event_faq, many = True)
-    return Response({
-        "event_faqs": serializers.data
-    })  
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def event_faq(request):
-    pk = request.GET.get('id')
-    faq = EventFAQ.objects.get(id = pk)
-    serializer = EventFAQSerializer(faq)
-    return Response(serializer.data)
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_event_faq(request):
-    pk = request.GET.get("id")
-    event_faq = EventFAQ.objects.get(id=pk)
+    id = request.GET.get("id")
+    event_faq = EventFAQ.objects.get(id=id)
     event_faq.delete()
     return Response({"success": "EventFAQ deleted successfully"})
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def event_sponsor_list(request):
-    event_faq = EventSponsor.objects.all()
-    serializers = EventSponsorSerializer(event_faq, many = True)
-    return Response({
-        "event_sponsors": serializers.data
-    }) 
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def event_sponsor(request):
-    pk = request.GET.get('id')
-    sponsor = EventSponsor.objects.get(id = pk)
-    serializer = EventSponsorSerializer(sponsor)
-    return Response(serializer.data)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_event_sponsor(request):
-    event_id = request.POST.get('id')
+    slug = request.POST.get('slug')
     sponsor_name = request.POST.get('sponsor_name')
     sponsorship_category = request.POST.get('sponsorship_category')
+    order = int(request.POST.get('order'))
     sponsor_banner = request.FILES.get('sponsor_banner')
 
     try:
-        event = Event.objects.get(id=event_id)
+        event = Event.objects.get(slug=slug)
     except Event.DoesNotExist:
         return Response({"error": "Event does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -222,7 +239,8 @@ def create_event_sponsor(request):
         event=event,
         sponsor_name=sponsor_name,
         sponsorship_category=sponsorship_category,
-        sponsor_banner=sponsor_banner
+        sponsor_banner=sponsor_banner,
+        order=order,
     )
     sponsor.save()
 
@@ -235,7 +253,8 @@ def update_event_sponsor(request):
     sponsor_id = request.POST.get('id')
     sponsor_name = request.POST.get('sponsor_name')
     sponsorship_category = request.POST.get('sponsorship_category')
-    sponsor_banner = request.POST.get('sponsor_banner')
+    sponsor_banner = request.FILES.get('sponsor_banner')
+    order = int(request.POST.get('order'))
 
     try:
         sponsor = EventSponsor.objects.get(id=sponsor_id)
@@ -244,20 +263,30 @@ def update_event_sponsor(request):
 
     sponsor.sponsor_name = sponsor_name
     sponsor.sponsorship_category = sponsorship_category
-    sponsor.sponsor_banner = sponsor_banner
+    sponsor.order = order
+
+    if sponsor_banner:
+        sponsor.sponsor_banner = sponsor_banner
 
     sponsor.save()
 
     return Response({"success": "Event Sponsor updated successfully"})
 
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_event_sponsor(request):
-    event_sponsor_id = request.GET.get("id")
-    event_sponsor = EventSponsor.objects.get(id=event_sponsor_id)
-    event_sponsor.delete()
-    return Response({"success": "EventSponsor deleted successfully"})
-    
+    sponsor_id = request.GET.get('id')
+
+    try:
+        sponsor = EventSponsor.objects.get(id=sponsor_id)
+    except EventSponsor.DoesNotExist:
+        return Response({"error": "Event Sponsor does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+    sponsor.delete()
+
+    return Response({"success": "Event Sponsor deleted successfully"})
+
 
 
 @api_view(['GET'])
@@ -401,13 +430,26 @@ def delete_team(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def tournaments_list(request):
     tournaments = Tournament.objects.all()
     serializers = EventSerializer(tournaments, many = True)
     return Response({
         "tournaments": serializers.data
     })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def event_tournaments_list(request):
+    user = request.user
+    eslug = request.GET.get("slug")
+    event = Event.objects.get(slug=eslug)
+    orgg = Organizer.objects.get(user=user)
+    tournaments = Tournament.objects.filter(organizer=orgg,event=event)
+    serializers = TournamentSerializer(tournaments, many = True)
+
+    return Response({
+        "tournaments": serializers.data
+    },status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
