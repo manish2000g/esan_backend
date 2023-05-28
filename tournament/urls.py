@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import create_event, create_event_faq, event_tournaments_list,get_event_sponsor,get_event_sponsor_detail,all_event_list,get_event_faq,create_event_sponsor, create_team, create_tournament, create_tournament_faq, create_tournament_sponsor, delete_event, delete_event_faq, delete_event_sponsor, delete_tournament, delete_tournament_faq, delete_tournament_sponsor, event_detail, event_list, delete_team, retrieve_team, tournament_detail, tournament_faq, tournament_faq_list, tournament_sponsor, tournament_sponsor_list, tournaments_list,update_event,get_my_team, update_event_faq, update_event_sponsor,update_team,create_team_initials, update_tournament, update_tournament_faq, update_tournament_sponsor
+from .views import create_event, games_list,create_event_faq, event_tournaments_list,get_event_sponsor,get_event_sponsor_detail,all_event_list,get_event_faq,create_event_sponsor, create_team, create_tournament, create_tournament_faq, create_tournament_sponsor, delete_event, delete_event_faq, delete_event_sponsor, delete_tournament, delete_tournament_faq, delete_tournament_sponsor, event_detail, event_list, delete_team, retrieve_team, tournament_detail, tournament_faq, tournament_faq_list, tournament_sponsor, tournament_sponsor_list, tournaments_list,update_event,get_my_team, update_event_faq, update_event_sponsor,update_team,create_team_initials, update_tournament, update_tournament_faq, update_tournament_sponsor
 
 urlpatterns = [
     path('create-event/', create_event, name='create_event'),
@@ -23,18 +23,19 @@ urlpatterns = [
     path('create-team/', create_team, name='create_team'),
     path('update-team/', update_team, name='create_team'),
     path('delete-team/', delete_team, name='delete_team'),
+    path('event-tournaments/', event_tournaments_list, name='event_tournaments_list'),
+    path('all-games/', games_list, name='games_list'),
     path('create-tournament/', create_tournament, name='create_tournament'),
     path('update-tournament/', update_tournament, name='update_tournament'),
     path('tournaments/', tournaments_list, name='tournaments'),
-    path('event-tournaments/', event_tournaments_list, name='event_tournaments_list'),
     path('tournament-detail/', tournament_detail, name= 'tournament_detail'),
     path('delete-tournament/', delete_tournament, name='delete_tournament'),
-    path('tournament-sponsors/', create_tournament_sponsor, name='create_tournament_sponsor'),
-    path('tournament-sponsors/', update_tournament_sponsor, name='update_tournament_sponsor'),
-    path('tournament-sponsors/', delete_tournament_sponsor, name='delete_tournament_sponsor'),
-    path('tournament-faqs/', create_tournament_faq, name='create_tournament_faq'),
-    path('tournament-faqs/', update_tournament_faq, name='update_tournament_faq'),
-    path('tournament-faqs/', delete_tournament_faq, name='delete_tournament_faq'),
+    path('create-tournament-sponsors/', create_tournament_sponsor, name='create_tournament_sponsor'),
+    path('update-tournament-sponsors/', update_tournament_sponsor, name='update_tournament_sponsor'),
+    path('delete-tournament-sponsors/', delete_tournament_sponsor, name='delete_tournament_sponsor'),
+    path('create-tournament-faqs/', create_tournament_faq, name='create_tournament_faq'),
+    path('update-tournament-faqs/', update_tournament_faq, name='update_tournament_faq'),
+    path('delete-tournament-faqs/', delete_tournament_faq, name='delete_tournament_faq'),
     path('tournament-faqs-list/', tournament_faq_list, name='tournament_faq_list'),
     path('tournament-faq/', tournament_faq, name='tournament_faq'),
     path('tournament-sponsor/', tournament_sponsor, name='tournament_sponsor'),

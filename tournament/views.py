@@ -1,7 +1,7 @@
 from .models import Event, EventFAQ, EventSponsor,Team,Game, Tournament, TournamentFAQ, TournamentSponsor
 from account.models import Organizer, UserProfile,Organization
 from account.serializers import UserProfileSerializer
-from .serializers import EventFAQSerializer, EventSponsorSerializer,GameSmallSerializer, TournamentFAQSerializer, TournamentSerializer, TournamentSponsorSerializer, EventSerializer, TeamSerializer,EventSmallSerializer
+from .serializers import EventFAQSerializer, EventSponsorSerializer,GameSerializer,GameSmallSerializer, TournamentFAQSerializer, TournamentSerializer, TournamentSponsorSerializer, EventSerializer, TeamSerializer,EventSmallSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -432,7 +432,7 @@ def delete_team(request):
 @api_view(['GET'])
 def tournaments_list(request):
     tournaments = Tournament.objects.all()
-    serializers = EventSerializer(tournaments, many = True)
+    serializers = TournamentSerializer(tournaments, many = True)
     return Response({
         "tournaments": serializers.data
     })
@@ -451,6 +451,15 @@ def event_tournaments_list(request):
         "tournaments": serializers.data
     },status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+def games_list(request):
+    gamess = Game.objects.all()
+    games_ser = GameSerializer(gamess, many = True)
+
+    return Response({
+        "games": games_ser.data
+    },status=status.HTTP_200_OK)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_tournament(request):
@@ -461,26 +470,27 @@ def create_tournament(request):
         if user.role != "Organizer":
             return Response({"error": "Only organizers can create tournaments"}, status=status.HTTP_403_FORBIDDEN)
 
-        tournament_name = request.data.get('tournament_name', '')
-        tournament_logo = request.data.get('tournament_logo', None)
-        tournament_mode = request.data.get('tournament_mode', 'Online')
-        tournament_participants = request.data.get('tournament_participants', 'Players')
-        is_free = bool(request.data.get('is_free', False))
-        tournament_fee = request.data.get('tournament_fee', None)
-        maximum_no_of_participants = request.data.get('maximum_no_of_participants')
-        game_id = request.data.get('id')
-        tournament_description = request.data.get('tournament_description', '')
-        tournament_rules = request.data.get('tournament_rules', '')
-        tournament_prize_pool = request.data.get('tournament_prize_pool', '')
-        registration_opening_date = request.data.get('registration_opening_date')
-        registration_closing_date = request.data.get('registration_closing_date')
-        tournament_start_date = request.data.get('tournament_start_date')
-        tournament_end_date = request.data.get('tournament_end_date')
-        is_published = bool(request.data.get('is_published', False))
-        is_registration_enabled = bool(request.data.get('is_registration_enabled', False))
-        accept_registration_automatic = bool(request.data.get('accept_registration_automatic', False))
-        contact_email = request.data.get('contact_email', '')
-        discord_link = request.data.get('discord_link', '')
+        tournament_name = request.POST.get('tournament_name', '')
+        tournament_logo = request.FILES.get('tournament_logo', None)
+        tournament_banner = request.FILES.get('tournament_banner', None)
+        tournament_mode = request.POST.get('tournament_mode', 'Online')
+        tournament_participants = request.POST.get('tournament_participants', 'Players')
+        is_free = bool(request.POST.get('is_free', False))
+        tournament_fee = request.POST.get('tournament_fee', None)
+        maximum_no_of_participants = request.POST.get('maximum_no_of_participants')
+        game_id = request.POST.get('id')
+        tournament_description = request.POST.get('tournament_description', '')
+        tournament_rules = request.POST.get('tournament_rules', '')
+        tournament_prize_pool = request.POST.get('tournament_prize_pool', '')
+        registration_opening_date = request.POST.get('registration_opening_date')
+        registration_closing_date = request.POST.get('registration_closing_date')
+        tournament_start_date = request.POST.get('tournament_start_date')
+        tournament_end_date = request.POST.get('tournament_end_date')
+        is_published = bool(request.POST.get('is_published', False))
+        is_registration_enabled = bool(request.POST.get('is_registration_enabled', False))
+        accept_registration_automatic = bool(request.POST.get('accept_registration_automatic', False))
+        contact_email = request.POST.get('contact_email', '')
+        discord_link = request.POST.get('discord_link', '')
 
         game = Game.objects.get(id=game_id)
         organizer = Organizer.objects.get(user=user)
@@ -489,6 +499,7 @@ def create_tournament(request):
             organizer=organizer,
             tournament_name=tournament_name,
             tournament_logo=tournament_logo,
+            tournament_banner=tournament_banner,
             tournament_mode=tournament_mode,
             tournament_participants=tournament_participants,
             is_free=is_free,
@@ -717,10 +728,10 @@ def tournament_faq(request):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_tournament_faq(request):
-    faq_id = request.data.get('id')
-    value = request.data.get('value')
-    heading = request.data.get('heading')
-    detail = request.data.get('detail')
+    faq_id = request.POST.get('id')
+    value = request.POST.get('value')
+    heading = request.POST.get('heading')
+    detail = request.POST.get('detail')
 
     try:
         tournament_faq = TournamentFAQ.objects.get(id=faq_id)

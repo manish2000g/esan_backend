@@ -67,19 +67,11 @@ class TournamentFAQSerializer(serializers.ModelSerializer):
         fields = ('id', 'tournament', 'value', 'heading', 'detail')
 
 class TournamentSerializer(serializers.ModelSerializer):
-    game = GameSerializer()
-    tournament_streams = serializers.StringRelatedField(many=True)
-    tournament_sponsors = serializers.StringRelatedField(many=True)
-    tournament_faqs = TournamentFAQSerializer(many=True)
+    game = GameSerializer(read_only=True)
 
     class Meta:
         model = Tournament
-        fields = ('id', 'organizer', 'tournament_name', 'tournament_logo', 'tournament_mode', 'tournament_participants',
-                  'is_free', 'tournament_fee', 'maximum_no_of_participants', 'game', 'tournament_description',
-                  'tournament_rules', 'tournament_prize_pool', 'registration_opening_date', 'registration_closing_date',
-                  'tournament_start_date', 'tournament_end_date', 'created_at', 'updated_at', 'is_published',
-                  'is_registration_enabled', 'accept_registration_automatic', 'contact_email', 'discord_link',
-                  'tournament_streams', 'tournament_sponsors', 'tournament_faqs')
+        exclude = ['event', 'organizer']
 
 class TournamentStreamsSerializer(serializers.ModelSerializer):
     class Meta:

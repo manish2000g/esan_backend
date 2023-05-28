@@ -92,6 +92,7 @@ class Tournament(models.Model):
     event = models.ForeignKey(Event,on_delete=models.CASCADE)
     tournament_name = models.CharField(max_length=700)
     tournament_logo = models.FileField(blank=True)
+    tournament_banner = models.FileField(blank=True)
     tournament_mode = models.CharField(max_length=700,choices=TOURNAMENT_MODE_CHOICES,default='Online')
     tournament_participants = models.CharField(max_length=700,choices=TOURNAMENT_PARTICIPANTS,default='Squad')
     is_free = models.BooleanField(default=False)
