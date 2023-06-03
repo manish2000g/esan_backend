@@ -79,6 +79,7 @@ class EventSponsor(models.Model):
     sponsorship_category = models.CharField(max_length=500)
     sponsor_banner = models.FileField()
     order = models.IntegerField(default=0)
+    sponsor_link = models.CharField(max_length=500,blank=True)
 
     def __str__(self) -> str:
         return self.sponsor_name
@@ -144,10 +145,10 @@ class TournamentStreams(models.Model):
 class TournamentSponsor(models.Model):
     tournament = models.ForeignKey(Tournament,on_delete=models.CASCADE)
     sponsor_name = models.CharField(max_length=500)
+    sponsor_link = models.CharField(max_length=500,blank=True)
     sponsorship_category = models.CharField(max_length=500)
-    sponsor_logo = models.FileField()
-    sponsor_link = models.URLField(max_length=500)
     sponsor_banner = models.FileField()
+    order = models.IntegerField(default=0)
 
     def __str__(self) -> str:
         return self.sponsor_name

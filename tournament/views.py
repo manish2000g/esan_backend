@@ -255,7 +255,7 @@ def get_event_news_feed(request):
     return Response({"news_feeds": news_feeds_serializer.data})
 
 
-@api_view(['PUT'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_event_news_feed(request):
     news_feed_id = request.GET.get('id')
@@ -292,6 +292,7 @@ def delete_event_news_feed(request):
 def create_event_sponsor(request):
     slug = request.POST.get('slug')
     sponsor_name = request.POST.get('sponsor_name')
+    sponsor_link = request.POST.get('sponsor_link')
     sponsorship_category = request.POST.get('sponsorship_category')
     order = int(request.POST.get('order'))
     sponsor_banner = request.FILES.get('sponsor_banner')
@@ -306,6 +307,7 @@ def create_event_sponsor(request):
         sponsor_name=sponsor_name,
         sponsorship_category=sponsorship_category,
         sponsor_banner=sponsor_banner,
+        sponsor_link=sponsor_link,
         order=order,
     )
     sponsor.save()
@@ -319,6 +321,7 @@ def update_event_sponsor(request):
     sponsor_id = request.POST.get('id')
     sponsor_name = request.POST.get('sponsor_name')
     sponsorship_category = request.POST.get('sponsorship_category')
+    sponsor_link = request.POST.get('sponsor_link')
     sponsor_banner = request.FILES.get('sponsor_banner')
     order = int(request.POST.get('order'))
 
@@ -328,6 +331,7 @@ def update_event_sponsor(request):
         return Response({"error": "Event Sponsor does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
     sponsor.sponsor_name = sponsor_name
+    sponsor.sponsor_link = sponsor_link
     sponsor.sponsorship_category = sponsorship_category
     sponsor.order = order
 
@@ -735,8 +739,8 @@ def tournament_detail(request, id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def tournament_details(request):
-    idd = request.GET.get("id") 
-    tournament = Tournament.objects.get(id = idd)
+    slug = request.GET.get("slug") 
+    tournament = Tournament.objects.get(slug = slug)
     tournament_serializer = TournamentSerializer(tournament)
     return Response({
         'tournament': tournament_serializer.data,
@@ -746,8 +750,8 @@ def tournament_details(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_tournament(request):
-    pk = request.POST.get("id")
-    tournament = Tournament.objects.get(id=pk)
+    slug = request.POST.get("slug")
+    tournament = Tournament.objects.get(slug=slug)
     user = request.user
     tournament_name = request.POST.get('tournament_name', tournament.tournament_name)
     tournament_logo = request.FILES.get('tournament_logo', None)
@@ -807,23 +811,23 @@ def update_tournament(request):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_tournament(request):
-    pk = request.GET.get("id")
-    tournament = Tournament.objects.get(id=pk)
+    slug = request.GET.get("slug")
+    tournament = Tournament.objects.get(slug=slug)
     tournament.delete()
     return Response({"success": "Tournament deleted successfully"})
     
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_tournament_sponsor(request):
-    tournament_id = request.POST.get('id')
+    slug = request.POST.get('slug')
     sponsor_name = request.POST.get('sponsor_name')
     sponsorship_category = request.POST.get('sponsorship_category')
-    sponsor_logo = request.FILES.get('sponsor_logo')
     sponsor_link = request.POST.get('sponsor_link')
     sponsor_banner = request.FILES.get('sponsor_banner')
+    order = int(request.POST.get('order'))
 
     try:
-        tournament = Tournament.objects.get(id=tournament_id)
+        tournament = Tournament.objects.get(slug=slug)
     except Tournament.DoesNotExist:
         return Response({"error": "Tournament does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -831,9 +835,9 @@ def create_tournament_sponsor(request):
         tournament=tournament,
         sponsor_name=sponsor_name,
         sponsorship_category=sponsorship_category,
-        sponsor_logo=sponsor_logo,
+        sponsor_banner=sponsor_banner,
+        order=order,
         sponsor_link=sponsor_link,
-        sponsor_banner=sponsor_banner
     )
     tournament_sponsor.save()
     return Response({"success": "TournamentSponsor created successfully"})
@@ -849,21 +853,21 @@ def get_tournament_sponsor_list(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_tournament_sponsor(request):
-    tournament_id = request.GET.get("id")
-    tournament = Tournament.objects.get(id=tournament_id)
+    slug = request.GET.get("slug")
+    tournament = Tournament.objects.get(slug=slug)
     sponsor = TournamentSponsor.objects.filter(tournament = tournament)
-    serializer = TournamentSponsorSerializer(sponsor)
-    return Response(serializer.data)
+    serializer = TournamentSponsorSerializer(sponsor,many=True)
+    return Response({"sponsors":serializer.data})
 
-@api_view(['PUT'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_tournament_sponsor(request):
     sponsor_id = request.POST.get('id')
-    sponsor_name = request.data.get('sponsor_name')
-    sponsorship_category = request.data.get('sponsorship_category')
-    sponsor_logo = request.data.get('sponsor_logo')
-    sponsor_link = request.data.get('sponsor_link')
-    sponsor_banner = request.data.get('sponsor_banner')
+    sponsor_name = request.POST.get('sponsor_name')
+    sponsorship_category = request.POST.get('sponsorship_category')
+    sponsor_link = request.POST.get('sponsor_link')
+    sponsor_banner = request.FILES.get('sponsor_banner',None)
+    order = int(request.POST.get('order'))
 
     try:
         tournament_sponsor = TournamentSponsor.objects.get(id=sponsor_id)
@@ -871,10 +875,11 @@ def update_tournament_sponsor(request):
         return Response({"error": "Tournament Sponsor does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
     tournament_sponsor.sponsor_name = sponsor_name
-    tournament_sponsor.sponsorship_category = sponsorship_category
-    tournament_sponsor.sponsor_logo = sponsor_logo
     tournament_sponsor.sponsor_link = sponsor_link
-    tournament_sponsor.sponsor_banner = sponsor_banner
+    tournament_sponsor.order = order
+    tournament_sponsor.sponsorship_category = sponsorship_category
+    if sponsor_banner:
+        tournament_sponsor.sponsor_banner = sponsor_banner
 
     tournament_sponsor.save()
     return Response({"success": "TournamentSponsor updated successfully"}, status=status.HTTP_200_OK)
@@ -892,13 +897,13 @@ def delete_tournament_sponsor(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_tournament_faq(request):
-    tournament_id = request.POST.get('id')
+    slug = request.POST.get('slug')
     value = request.POST.get('value')
     heading = request.POST.get('heading')
     detail = request.POST.get('detail')
 
     try:
-        tournament = Tournament.objects.get(id=tournament_id)
+        tournament = Tournament.objects.get(slug=slug)
     except Tournament.DoesNotExist:
         return Response({"error": "Tournament does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -923,17 +928,16 @@ def get_tournament_faq_list(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_tournament_faq(request):
-    tournament_id = request.GET.get("id")
-    tournament = Tournament.objects.get(id=tournament_id)
+    slug = request.GET.get("slug")
+    tournament = Tournament.objects.get(slug=slug)
     faq = TournamentFAQ.objects.filter(tournament = tournament)
-    serializer = TournamentFAQSerializer(faq)
-    return Response(serializer.data)
+    serializer = TournamentFAQSerializer(faq,many=True)
+    return Response({"FAQs":serializer.data})
 
-@api_view(['PUT'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_tournament_faq(request):
     faq_id = request.POST.get('id')
-    value = request.POST.get('value')
     heading = request.POST.get('heading')
     detail = request.POST.get('detail')
 
@@ -942,7 +946,6 @@ def update_tournament_faq(request):
     except TournamentFAQ.DoesNotExist:
         return Response({"error": "Tournament FAQ does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
-    tournament_faq.value = value
     tournament_faq.heading = heading
     tournament_faq.detail = detail
 
@@ -984,8 +987,8 @@ def create_tournament_stream(request):
 
 @api_view(['GET'])
 def get_tournament_stream(request):
-    tournament_id = request.GET.get("id")
-    tournament = Tournament.objects.get(id=tournament_id)
+    slug = request.GET.get("slug")
+    tournament = Tournament.objects.get(slug=slug)
     tournament_stream= TournamentStreams.objects.filter(tournament=tournament)
     serializer = TournamentStreamsSerializer(tournament_stream, many=True)
     return Response({"tournament_streams": serializer.data})
@@ -1072,8 +1075,8 @@ def create_stage(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_stage(request):
-    tournament_id = request.GET.get("id")
-    tournament = Tournament.objects.get(id=tournament_id)
+    slug = request.GET.get("slug")
+    tournament = Tournament.objects.get(slug=slug)
     stages = Stage.objects.filter(tournament=tournament)
     serializer = StageSerializer(stages, many=True)
     return Response({"stages": serializer.data})
@@ -1138,12 +1141,12 @@ def delete_stage(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def registered_teams(request):
-    tournament_id = request.GET.get("id")
+    slug = request.GET.get("slug")
     
     user = request.user
 
     if user.role == "Organizer":
-        tournament = Tournament.objects.get(id=tournament_id)
+        tournament = Tournament.objects.get(slug=slug)
         registrations = TeamTournamentRegistration.objects.filter(tournament__in=tournament)
         serializer = TeamTournamentRegistrationSerializer(registrations, many=True)
         return Response({"registrations": serializer.data})
