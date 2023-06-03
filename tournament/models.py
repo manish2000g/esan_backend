@@ -66,7 +66,13 @@ class EventFAQ(models.Model):
 
     def __str__(self) -> str:
         return self.heading
-    
+
+class EventNewsFeed(models.Model):
+    event = models.ForeignKey(Event,on_delete=models.CASCADE)
+    content = RichTextField()
+    user = models.ForeignKey(Organizer, on_delete=models.CASCADE)
+
+
 class EventSponsor(models.Model):
     event = models.ForeignKey(Event,on_delete=models.CASCADE)
     sponsor_name = models.CharField(max_length=500)
@@ -88,18 +94,27 @@ class Tournament(models.Model):
         ('Teams','Teams'),
     )
 
+    TOURNAMENT_STATUS = (
+        ('Live', 'Live'),
+        ('Past', 'Past'),
+        ('Upcoming', 'Upcoming')
+    )
+    slug = models.SlugField(max_length=100 ,unique=True)
     organizer = models.ForeignKey(Organizer,on_delete=models.CASCADE)
     event = models.ForeignKey(Event,on_delete=models.CASCADE)
+    location = models.CharField(max_length=100)
     tournament_name = models.CharField(max_length=700)
     tournament_logo = models.FileField(blank=True)
     tournament_banner = models.FileField(blank=True)
     tournament_mode = models.CharField(max_length=700,choices=TOURNAMENT_MODE_CHOICES,default='Online')
+    tournament_status = models.CharField(max_length=50, choices=TOURNAMENT_STATUS)
     tournament_participants = models.CharField(max_length=700,choices=TOURNAMENT_PARTICIPANTS,default='Squad')
     is_free = models.BooleanField(default=False)
     tournament_fee = models.FloatField(blank=True)
     maximum_no_of_participants = models.IntegerField()
     game = models.ForeignKey(Game,on_delete=models.CASCADE)
     tournament_description = RichTextField(blank=True)
+    tournament_short_description = RichTextField(blank=True, max_length= 25)
     tournament_rules = RichTextField(blank=True)
     tournament_prize_pool = RichTextField(blank=True)
     registration_opening_date = models.DateTimeField()

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import (EliminationMode, Game, Team, Event, EventFAQ, EventSponsor,
+from .models import (EliminationMode, EventNewsFeed, Game, Team, Event, EventFAQ, EventSponsor,
                      Tournament, TournamentFAQ, TournamentSponsor, TournamentStreams, Stage,SoloTournamentRegistration,TeamTournamentRegistration,SoloGroup,TeamGroup,SoloMatch,TeamMatch)
 from account.serializers import UserProfileSerializer,OrganizationSerializer,OrganizerSerializer
 
@@ -52,40 +52,55 @@ class EventSerializer(serializers.ModelSerializer):
         fields = ('id', 'organizer', 'event_name', 'event_description', 'event_start_date', 'event_end_date','event_thumbnail','event_thumbnail_alt_description','slug')
 
 class EventFAQSerializer(serializers.ModelSerializer):
+    event = EventSerializer(read_only=True)
     class Meta:
         model = EventFAQ
         fields = ('id', 'value', 'heading', 'detail')
 
+class EventNewsFeedSerializer(serializers.ModelSerializer):
+    event = EventSerializer(read_only=True)
+
+    class Meta:
+        model = EventNewsFeed
+        fields = ('id', 'content', 'user')
+
 class EventSponsorSerializer(serializers.ModelSerializer):
+    event = EventSerializer(read_only=True)
+
     class Meta:
         model = EventSponsor
         fields = ('id', 'sponsor_name', 'sponsorship_category', 'sponsor_banner','order')
-
-class TournamentFAQSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TournamentFAQ
-        fields = ('id', 'tournament', 'value', 'heading', 'detail')
 
 class TournamentSerializer(serializers.ModelSerializer):
     game = GameSerializer(read_only=True)
 
     class Meta:
         model = Tournament
-        exclude = ['event', 'organizer']
+        exclude = ['event', 'elimination_node']
+        
+
+class TournamentFAQSerializer(serializers.ModelSerializer):
+    tournament = TournamentSerializer(read_only=True)
+    class Meta:
+        model = TournamentFAQ
+        fields = ('id', 'tournament', 'value', 'heading', 'detail')
+
 
 class TournamentStreamsSerializer(serializers.ModelSerializer):
+    tournament = TournamentSerializer(read_only=True)
     class Meta:
         model = TournamentStreams
         fields = ('id', 'tournament', 'stream_name', 'url')
 
 class TournamentSponsorSerializer(serializers.ModelSerializer):
+    tournament = TournamentSerializer(read_only=True)
     class Meta:
         model = TournamentSponsor
         fields = ('id', 'tournament', 'sponsor_name', 'sponsorship_category', 'sponsor_logo', 'sponsor_link', 'sponsor_banner')
 
 class StageSerializer(serializers.ModelSerializer):
-    stage_elimation_mode = EliminationModeSerializer()
-    tournament = TournamentSerializer()
+    stage_elimation_mode = EliminationModeSerializer(read_only=True)
+    tournament = TournamentSerializer(read_only=True)
 
     class Meta:
         model = Stage
@@ -93,12 +108,18 @@ class StageSerializer(serializers.ModelSerializer):
 
 
 class SoloTournamentRegistrationSerializer(serializers.ModelSerializer):
+    tournament = TournamentSerializer(read_only=True)
+    players = UserProfileSerializer(read_only=True)
+
     class Meta:
         model = SoloTournamentRegistration
         fields = '__all__'
 
 
 class TeamTournamentRegistrationSerializer(serializers.ModelSerializer):
+    tournament = TournamentSerializer(read_only=True)
+    players = UserProfileSerializer(read_only=True)
+    team = TeamOrgSerializer(read_only=True)
     class Meta:
         model = TeamTournamentRegistration
         fields = '__all__'
