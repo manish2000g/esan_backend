@@ -55,28 +55,29 @@ class EventFAQSerializer(serializers.ModelSerializer):
     event = EventSerializer(read_only=True)
     class Meta:
         model = EventFAQ
-        fields = ('id', 'value', 'heading', 'detail')
+        fields = ('id', 'value', 'heading', 'detail','event')
 
 class EventNewsFeedSerializer(serializers.ModelSerializer):
     event = EventSerializer(read_only=True)
+    user = UserProfileSerializer(read_only=True)
 
     class Meta:
         model = EventNewsFeed
-        fields = ('id', 'content', 'user')
+        fields = ('id', 'content', 'user','event')
 
 class EventSponsorSerializer(serializers.ModelSerializer):
     event = EventSerializer(read_only=True)
 
     class Meta:
         model = EventSponsor
-        fields = ('id', 'sponsor_name', 'sponsorship_category', 'sponsor_banner','order')
+        fields = ('id', 'sponsor_name', 'sponsorship_category', 'sponsor_banner','order','event')
 
 class TournamentSerializer(serializers.ModelSerializer):
     game = GameSerializer(read_only=True)
 
     class Meta:
         model = Tournament
-        exclude = ['event', 'elimination_node']
+        exclude = ['event']
         
 
 class TournamentFAQSerializer(serializers.ModelSerializer):

@@ -3,7 +3,7 @@ from .views import (create_elimination_mode, create_event, create_event_news_fee
                     delete_tournament_stream, elimination_mode_list, game_list,create_event_faq, event_tournaments_list, get_elimination_mode, get_event_news_feed,get_event_sponsor,get_event_sponsor_detail,
                     all_event_list,get_event_faq,create_event_sponsor, create_team, create_tournament, create_tournament_faq, create_tournament_sponsor, delete_event, delete_event_faq, 
                     delete_event_sponsor, delete_tournament, delete_tournament_faq, delete_tournament_sponsor, event_detail, event_list, delete_team, get_game, open_registration, register_team, registered_teams, retrieve_team, 
-                    stage, stage_list, tournament_detail, tournament_faq, tournament_faq_list, tournament_sponsor, tournament_sponsor_list, tournament_stream, tournament_stream_list, tournaments_list, update_elimination_mode,update_event,get_my_team, 
+                    stage,tournament_details, stage_list, tournament_detail, tournament_faq, tournament_faq_list, tournament_sponsor, tournament_sponsor_list, tournament_stream, tournament_stream_list, tournaments_list, update_elimination_mode,update_event,get_my_team, 
                     update_event_faq, update_event_news_feed, update_event_sponsor, update_game, update_stage,update_team,create_team_initials, update_tournament, update_tournament_faq, update_tournament_sponsor, update_tournament_stream
 )
 urlpatterns = [
@@ -45,9 +45,11 @@ urlpatterns = [
     path('event-tournaments/', event_tournaments_list, name='event_tournaments_list'),
     path('create-tournament/', create_tournament, name='create_tournament'),
     path('update-tournament/', update_tournament, name='update_tournament'),
-    path('tournaments/', tournaments_list, name='tournaments'),
-    path('tournament-detail/<int:id>/', tournament_detail, name= 'tournament_detail'),
     path('delete-tournament/', delete_tournament, name='delete_tournament'),
+    path('open-registration/', open_registration, name='open_registration'),
+    path('tournaments/', tournaments_list, name='tournaments'),
+    path('get-tournament-detail/', tournament_details, name= 'tournament_details'),
+    path('tournament-detail/<int:id>/', tournament_detail, name= 'tournament_detail'),
     path('create-tournament-sponsors/', create_tournament_sponsor, name='create_tournament_sponsor'),
     path('update-tournament-sponsors/', update_tournament_sponsor, name='update_tournament_sponsor'),
     path('delete-tournament-sponsors/', delete_tournament_sponsor, name='delete_tournament_sponsor'),
@@ -69,7 +71,6 @@ urlpatterns = [
     path('update-tournament-stage/', update_stage, name='update_stage'),
     path('delete-tournament-stage/', delete_stage, name='delete_stage'),
     path('registered-teams/', registered_teams, name='registered_teams'),
-    path('open-registration/', open_registration, name='open_registration'),
     path('register-team/', register_team, name='register_team'),
 
 ]
