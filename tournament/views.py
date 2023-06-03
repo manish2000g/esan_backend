@@ -540,7 +540,7 @@ def get_elimination_mode(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
-def elimination_mode_list(request):
+def get_elimination_mode_list(request):
     elimination_mode = EliminationMode.objects.all()
     serializers = EliminationModeSerializer(elimination_mode, many = True)
     return Response({
@@ -840,7 +840,7 @@ def create_tournament_sponsor(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def tournament_sponsor_list(request):
+def get_tournament_sponsor_list(request):
     tournament_sponsors = TournamentSponsor.objects.all()
     serializer = TournamentSponsorSerializer(tournament_sponsors, many=True)
     return Response({"tournament_sponsors": serializer.data})
@@ -848,7 +848,7 @@ def tournament_sponsor_list(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def tournament_sponsor(request):
+def get_tournament_sponsor(request):
     tournament_id = request.GET.get("id")
     tournament = Tournament.objects.get(id=tournament_id)
     sponsor = TournamentSponsor.objects.filter(tournament = tournament)
@@ -914,7 +914,7 @@ def create_tournament_faq(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def tournament_faq_list(request):
+def get_tournament_faq_list(request):
     tournament_faqs = TournamentFAQ.objects.all()
     serializer = TournamentFAQSerializer(tournament_faqs, many=True)
     return Response({"tournament_faqs": serializer.data})
@@ -922,7 +922,7 @@ def tournament_faq_list(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def tournament_faq(request):
+def get_tournament_faq(request):
     tournament_id = request.GET.get("id")
     tournament = Tournament.objects.get(id=tournament_id)
     faq = TournamentFAQ.objects.filter(tournament = tournament)
@@ -983,7 +983,7 @@ def create_tournament_stream(request):
         return Response({"error": "Unauthorized to create the Tournament Stream"}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET'])
-def tournament_stream(request):
+def get_tournament_stream(request):
     tournament_id = request.GET.get("id")
     tournament = Tournament.objects.get(id=tournament_id)
     tournament_stream= TournamentStreams.objects.filter(tournament=tournament)
@@ -993,7 +993,7 @@ def tournament_stream(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def tournament_stream_list(request):
+def get_tournament_stream_list(request):
     pk = request.GET.get('id')
     stream = TournamentStreams.objects.get(id = pk)
     serializer = TournamentStreamsSerializer(stream)
@@ -1069,16 +1069,9 @@ def create_stage(request):
     else:
         return Response({"error": "Unauthorized to create a stage"}, status=status.HTTP_401_UNAUTHORIZED)
 
-
-@api_view(['GET'])
-def stage_list(request):
-    stages = Stage.objects.all()
-    serializer = StageSerializer(stages, many=True)
-    return Response({"stages": serializer.data})
-
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def stage(request):
+def get_stage(request):
     tournament_id = request.GET.get("id")
     tournament = Tournament.objects.get(id=tournament_id)
     stages = Stage.objects.filter(tournament=tournament)
@@ -1087,7 +1080,7 @@ def stage(request):
 
 
 @api_view(['GET'])
-def stage_list(request):
+def get_stage_list(request):
     pk = request.GET.get('id')
     try:
         stage = Stage.objects.get(id=pk)
@@ -1160,7 +1153,7 @@ def registered_teams(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def open_registration(request):
+def open_tournament_registration(request):
     tournament_id = request.POST.get('id')
     registration_opening_date = request.POST.get('registration_opening_date')
     registration_closing_date = request.POST.get('registration_closing_date')
@@ -1209,7 +1202,6 @@ def register_team(request):
         return Response({"error": "Invalid tournament or team"}, status=404)
 
     if user.role == "Organization":
-        if open_registration(tournament):
             registration = TeamTournamentRegistration.objects.create(
                 tournament=tournament,
                 team=team,
@@ -1220,8 +1212,6 @@ def register_team(request):
             )
             registration.save()
             return Response({"success": "Team registered successfully"})
-        else:
-            return Response({"error": "Cannot register team. Registration is not open or some conditions are not met."})
     else:
         return Response({"error": "Unauthorized to register a team"})
     
