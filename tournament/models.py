@@ -91,8 +91,8 @@ class Tournament(models.Model):
     )
 
     TOURNAMENT_PARTICIPANTS = (
-        ('Players','Players'),
-        ('Teams','Teams'),
+        ('Player','Player'),
+        ('Team','Team'),
     )
 
     TOURNAMENT_STATUS = (
@@ -109,7 +109,7 @@ class Tournament(models.Model):
     tournament_banner = models.FileField(blank=True)
     tournament_mode = models.CharField(max_length=700,choices=TOURNAMENT_MODE_CHOICES,default='Online')
     tournament_status = models.CharField(max_length=50, choices=TOURNAMENT_STATUS,default="Upcoming")
-    tournament_participants = models.CharField(max_length=700,choices=TOURNAMENT_PARTICIPANTS,default='Squad')
+    tournament_participants = models.CharField(max_length=700,choices=TOURNAMENT_PARTICIPANTS,default='Team')
     is_free = models.BooleanField(default=False)
     tournament_fee = models.FloatField(blank=True,null=True)
     maximum_no_of_participants = models.IntegerField(default=0)
@@ -132,11 +132,13 @@ class Tournament(models.Model):
 
     def __str__(self) -> str:
         return self.tournament_name
+    
+    
 
     
 class TournamentStreams(models.Model):
     tournament = models.ForeignKey(Tournament,on_delete=models.CASCADE)
-    stream_name = models.CharField(max_length=500)
+    stream_title = models.CharField(max_length=500)
     url = models.URLField(max_length=500)
 
     def __str__(self) -> str:

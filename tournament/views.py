@@ -966,18 +966,18 @@ def delete_tournament_faq(request):
 @permission_classes([IsAuthenticated])
 def create_tournament_stream(request):
     user = request.user
-    if user.role != "Organizer":
-        tournament_id = request.POST.get('id')
-        stream_name = request.POST.get('stream_name')
+    if user.role == "Organizer":
+        slug = request.POST.get('slug')
+        stream_title = request.POST.get('stream_title')
         url = request.POST.get('url')
 
         try:
-            tournament = Tournament.objects.get(id=tournament_id)
+            tournament = Tournament.objects.get(slug=slug)
         except Tournament.DoesNotExist:
             return Response({"error": "Tournament does not exist"}, status=status.HTTP_404_NOT_FOUND)
         tournament_stream = TournamentStreams.objects.create(
             tournament = tournament,
-            stream_name = stream_name,
+            stream_title = stream_title,
             url = url
         )
         tournament_stream.save()
@@ -1009,14 +1009,14 @@ def update_tournament_stream(request):
     user = request.user
 
     if user.role == "Organizer":
-        stream_name = request.POST.get('stream_name')
+        stream_title = request.POST.get('stream_title')
         url = request.POST.get('url')
 
         try:
             stream = TournamentStreams.objects.get(id=stream_id)
         except TournamentStreams.DoesNotExist:
             return Response({"error": "Tournament stream not found"})
-        stream.stream_name = stream_name
+        stream.stream_title = stream_title
         stream.url = url
         stream.save()
 
@@ -1157,35 +1157,88 @@ def registered_teams(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def open_tournament_registration(request):
-    tournament_id = request.POST.get('id')
+    slug = request.POST.get('slug')
     registration_opening_date = request.POST.get('registration_opening_date')
     registration_closing_date = request.POST.get('registration_closing_date')
 
     try:
-        tournament = Tournament.objects.get(id=tournament_id)
+        tournament = Tournament.objects.get(slug=slug)
     except Tournament.DoesNotExist:
         return Response({"error": "Tournament does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
-    is_free = bool(request.POST.get('is_free')) 
+    is_free = bool(request.POST.get('is_free',False)) 
+    tournament.is_free = is_free
 
     if is_free: 
-        tournament.is_free = True
         tournament.tournament_fee = 0
     else:
-        tournament.is_free = False
-        fee= request.POST.get('tournament_fee') 
+        fee = request.POST.get('tournament_fee') 
         tournament.tournament_fee = float(fee)
 
     tournament.registration_opening_date = registration_opening_date
     tournament.registration_closing_date = registration_closing_date
-    tournament.is_published=True
-    tournament.is_registration_enabled=True
+    tournament.is_published = True
+    tournament.is_registration_enabled = True
     tournament.accept_registration_automatic = True
+
+    tournament_rules = request.POST.get('tournament_rules')
+    tournament.tournament_rules = tournament_rules
+
+    tournament_prize_pool = request.POST.get('tournament_prize_pool')
+    tournament.tournament_prize_pool = tournament_prize_pool
+    
+    maximum_no_of_participants = request.POST.get('maximum_no_of_participants')
+    tournament.maximum_no_of_participants = maximum_no_of_participants
+
+    contact_email = request.POST.get('contact_email'," ")
+    tournament.contact_email = contact_email
+
+    discord_link = request.POST.get('discord_link'," ")
+    tournament.discord_link = discord_link
+
+    location = request.POST.get('location'," ")
+    tournament.location = location
+
+    tournament.tournament_status = "Live"
+
+    tournament_participants = request.POST.get('tournament_participants')
+    tournament.tournament_participants = tournament_participants
+
+    if tournament.registration_opening_date and tournament.tournament_start_date:
+        if tournament.registration_opening_date >= tournament.tournament_start_date:
+            return Response({"error": "Registration opening date must be before the tournament start date"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if tournament.registration_closing_date and tournament.tournament_start_date:
+        if tournament.registration_closing_date >= tournament.tournament_start_date:
+            return Response({"error": "Registration closing date must be before the tournament start date"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if tournament.registration_opening_date and tournament.registration_closing_date:
+        if tournament.registration_opening_date >= tournament.registration_closing_date:
+            return Response({"error": "Registration opening date must be before the registration closing date"}, status=status.HTTP_400_BAD_REQUEST)
+
     tournament.save()
 
     return Response({"success": "Registration opened for the tournament"})
 
 
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def register_team_initials(request):
+    user = request.user
+    orgg = Organization.objects.get(user=user)
+    tournament_id = request.GET.get('tournament_id')
+    try:
+        tournament = Tournament.objects.get(id=tournament_id)
+    except (Tournament.DoesNotExist, Team.DoesNotExist):
+        return Response({"error": "Invalid tournament or team"}, status=404)
+
+    gam = tournament.game
+    teamss = Team.objeccts.filter(organization=orgg,game=gam)
+    teamss_ser = TeamSerializer(teamss,many=True)
+    return Response({"teamss": teamss_ser.data})
+    
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def register_team(request):
@@ -1195,12 +1248,10 @@ def register_team(request):
     registration_fee = request.POST.get('registration_fee')
     registration_status = request.POST.get('registration_status', 'Ongoing Review')
     payment_method = request.POST.get('payment_method', 'Other')
-    current_stage_id = request.POST.get('current_stage_id')
 
     try:
         tournament = Tournament.objects.get(id=tournament_id)
         team = Team.objects.get(id=team_id)
-        current_stage = Stage.objects.get(id=current_stage_id)
     except (Tournament.DoesNotExist, Team.DoesNotExist):
         return Response({"error": "Invalid tournament or team"}, status=404)
 
@@ -1211,7 +1262,6 @@ def register_team(request):
                 registration_fee=registration_fee,
                 registration_status=registration_status,
                 payment_method=payment_method,
-                current_stage=current_stage
             )
             registration.save()
             return Response({"success": "Team registered successfully"})

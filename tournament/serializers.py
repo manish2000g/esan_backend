@@ -81,23 +81,20 @@ class TournamentSerializer(serializers.ModelSerializer):
         
 
 class TournamentFAQSerializer(serializers.ModelSerializer):
-    tournament = TournamentSerializer(read_only=True)
     class Meta:
         model = TournamentFAQ
-        fields = ('id', 'tournament', 'value', 'heading', 'detail')
+        fields = ('id', 'value', 'heading', 'detail')
 
 
 class TournamentStreamsSerializer(serializers.ModelSerializer):
-    tournament = TournamentSerializer(read_only=True)
     class Meta:
         model = TournamentStreams
-        fields = ('id', 'tournament', 'stream_name', 'url')
+        fields = ('id', 'stream_title', 'url')
 
 class TournamentSponsorSerializer(serializers.ModelSerializer):
-    tournament = TournamentSerializer(read_only=True)
     class Meta:
         model = TournamentSponsor
-        fields = ('id', 'tournament', 'sponsor_name', 'sponsorship_category','order', 'sponsor_banner','sponsor_link')
+        fields = ('id', 'sponsor_name', 'sponsorship_category','order', 'sponsor_banner','sponsor_link')
 
 class StageSerializer(serializers.ModelSerializer):
     stage_elimation_mode = EliminationModeSerializer(read_only=True)
