@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from .models import EliminationMode, Event, EventFAQ, EventNewsFeed, EventSponsor, Stage,Team,Game, TeamTournamentRegistration, Tournament, TournamentFAQ, TournamentSponsor, TournamentStreams
 from account.models import Organizer, UserProfile,Organization
 from account.serializers import UserProfileSerializer
@@ -753,59 +753,40 @@ def update_tournament(request):
     slug = request.POST.get("slug")
     tournament = Tournament.objects.get(slug=slug)
     user = request.user
-    tournament_name = request.POST.get('tournament_name', tournament.tournament_name)
-    tournament_logo = request.FILES.get('tournament_logo', None)
-    tournament_banner = request.FILES.get('tournament_banner', None)
-    location = request.POST.get('location', tournament.location)
-    tournament_mode = request.POST.get('tournament_mode', tournament.tournament_mode)
-    is_free = request.POST.get('is_free', tournament.is_free)
-    tournament_fee = request.POST.get('tournament_fee', tournament.tournament_fee)
-    maximum_no_of_participants = request.POST.get('maximum_no_of_participants', tournament.maximum_no_of_participants)
-    tournament_description = request.POST.get('tournament_description', tournament.tournament_description)
-    tournament_short_description = request.POST.get('tournament_short_description', tournament.tournament_short_description)
-    tournament_rules = request.POST.get('tournament_rules', tournament.tournament_rules)
-    tournament_prize_pool = request.POST.get('tournament_prize_pool', tournament.tournament_prize_pool)
-    registration_opening_date = request.POST.get('registration_opening_date', tournament.registration_opening_date)
-    registration_closing_date = request.POST.get('registration_closing_date', tournament.registration_closing_date)
-    tournament_start_date = request.POST.get('tournament_start_date', tournament.tournament_start_date)
-    tournament_end_date = request.POST.get('tournament_end_date', tournament.tournament_end_date)
-    is_published = request.POST.get('is_published', tournament.is_published)
-    is_registration_enabled = request.POST.get('is_registration_enabled', tournament.is_registration_enabled)
-    accept_registration_automatic = request.POST.get('accept_registration_automatic', tournament.accept_registration_automatic)
-    contact_email = request.POST.get('contact_email', tournament.contact_email)
-    discord_link = request.POST.get('discord_link', tournament.discord_link)
 
-    print(tournament_logo)
-
+    # Check if the current user is authorized to update the tournament
     if tournament.organizer.user != user:
         return Response({"error": "You are not authorized to update this Tournament"}, status=status.HTTP_403_FORBIDDEN)
 
-    tournament.tournament_name = tournament_name
+    tournament.tournament_name = request.POST.get('tournament_name', tournament.tournament_name)
+    tournament_logo = request.FILES.get('tournament_logo')
     if tournament_logo:
         tournament.tournament_logo = tournament_logo
+    tournament_banner = request.FILES.get('tournament_banner')
     if tournament_banner:
         tournament.tournament_banner = tournament_banner
-    tournament.tournament_mode = tournament_mode
-    tournament.location = location
-    tournament.is_free = is_free
-    tournament.tournament_fee = tournament_fee
-    tournament.maximum_no_of_participants = maximum_no_of_participants
-    tournament.tournament_description = tournament_description
-    tournament.tournament_short_description = tournament_short_description
-    tournament.tournament_rules = tournament_rules
-    tournament.tournament_prize_pool = tournament_prize_pool
-    tournament.registration_opening_date = registration_opening_date
-    tournament.registration_closing_date = registration_closing_date
-    tournament.tournament_start_date = tournament_start_date
-    tournament.tournament_end_date = tournament_end_date
-    tournament.is_published = is_published
-    tournament.is_registration_enabled = is_registration_enabled
-    tournament.accept_registration_automatic = accept_registration_automatic
-    tournament.contact_email = contact_email
-    tournament.discord_link = discord_link
+    tournament.location = request.POST.get('location', tournament.location)
+    tournament.tournament_mode = request.POST.get('tournament_mode', tournament.tournament_mode)
+    tournament.is_free = bool(request.POST.get('is_free', tournament.is_free)=='True')
+    tournament.tournament_fee = request.POST.get('tournament_fee', tournament.tournament_fee)
+    tournament.maximum_no_of_participants = request.POST.get('maximum_no_of_participants', tournament.maximum_no_of_participants)
+    tournament.tournament_description = request.POST.get('tournament_description', tournament.tournament_description)
+    tournament.tournament_short_description = request.POST.get('tournament_short_description', tournament.tournament_short_description)
+    tournament.tournament_rules = request.POST.get('tournament_rules', tournament.tournament_rules)
+    tournament.tournament_prize_pool = request.POST.get('tournament_prize_pool', tournament.tournament_prize_pool)
+    tournament.registration_opening_date = request.POST.get('registration_opening_date', tournament.registration_opening_date)
+    tournament.registration_closing_date = request.POST.get('registration_closing_date', tournament.registration_closing_date)
+    tournament.tournament_start_date = request.POST.get('tournament_start_date', tournament.tournament_start_date)
+    tournament.tournament_end_date = request.POST.get('tournament_end_date', tournament.tournament_end_date)
+    tournament.is_published = bool(request.POST.get('is_published', tournament.is_published))
+    tournament.is_registration_enabled = bool(request.POST.get('is_registration_enabled', tournament.is_registration_enabled))
+    tournament.accept_registration_automatic = bool(request.POST.get('accept_registration_automatic', tournament.accept_registration_automatic))
+    tournament.contact_email = request.POST.get('contact_email', tournament.contact_email)
+    tournament.discord_link = request.POST.get('discord_link', tournament.discord_link)
 
     tournament.save()
     return Response({"success": "Tournament updated successfully"})
+
 
 
 @api_view(['DELETE'])
@@ -1203,23 +1184,9 @@ def open_tournament_registration(request):
 
     tournament_participants = request.POST.get('tournament_participants')
     tournament.tournament_participants = tournament_participants
-
-    if tournament.registration_opening_date and tournament.tournament_start_date:
-        if tournament.registration_opening_date >= tournament.tournament_start_date:
-            return Response({"error": "Registration opening date must be before the tournament start date"}, status=status.HTTP_400_BAD_REQUEST)
-
-    if tournament.registration_closing_date and tournament.tournament_start_date:
-        if tournament.registration_closing_date >= tournament.tournament_start_date:
-            return Response({"error": "Registration closing date must be before the tournament start date"}, status=status.HTTP_400_BAD_REQUEST)
-
-    if tournament.registration_opening_date and tournament.registration_closing_date:
-        if tournament.registration_opening_date >= tournament.registration_closing_date:
-            return Response({"error": "Registration opening date must be before the registration closing date"}, status=status.HTTP_400_BAD_REQUEST)
-
     tournament.save()
 
     return Response({"success": "Registration opened for the tournament"})
-
 
 
 
