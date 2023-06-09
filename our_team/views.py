@@ -15,18 +15,18 @@ def our_teams(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_our_team(request):
-    user = request.get
+    user = request.user
     if user.role == "Admin":
 
         name = request.POST.get('name')
         post = request.POST.get('post')
-        image = request.POST.get('image')
-        facebook_link = request.POST.get('facebook_link')
-        instagram_link = request.POST.get('instagram_link')
-        twitch_link = request.POST.get('twitch_link')
-        twitter_link = request.POST.get('twitter_link')
-        discord_link = request.POST.get('discord_link')
-        linkedin_link = request.POST.get('linkedin_link')
+        image = request.FILES.get('image')
+        facebook_link = request.POST.get('facebook_link'," ")
+        instagram_link = request.POST.get('instagram_link'," ")
+        twitch_link = request.POST.get('twitch_link'," ")
+        twitter_link = request.POST.get('twitter_link'," ")
+        discord_link = request.POST.get('discord_link'," ")
+        linkedin_link = request.POST.get('linkedin_link'," ")
 
         team = OurTeam.objects.create(
             name = name,
@@ -44,22 +44,22 @@ def create_our_team(request):
     else:
         return Response({"error":"Unauthourized for creating our_team"},status=status.HTTP_401_UNAUTHORIZED)
     
-@api_view(['PUT'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_our_team(request):
     idd = int(request.GET.get("id"))
-    user = request.get
+    user = request.user
     if user.role == "Admin":
         team = OurTeam.objects.get(id=idd)
         name = request.POST.get('name')
         post = request.POST.get('post')
-        image = request.POST.get('image')
-        facebook_link = request.POST.get('facebook_link')
-        instagram_link = request.POST.get('instagram_link')
-        twitch_link = request.POST.get('twitch_link')
-        twitter_link = request.POST.get('twitter_link')
-        discord_link = request.POST.get('discord_link')
-        linkedin_link = request.POST.get('linkedin_link')
+        image = request.FILES.get('image')
+        facebook_link = request.POST.get('facebook_link'," ")
+        instagram_link = request.POST.get('instagram_link'," ")
+        twitch_link = request.POST.get('twitch_link'," ")
+        twitter_link = request.POST.get('twitter_link'," ")
+        discord_link = request.POST.get('discord_link'," ")
+        linkedin_link = request.POST.get('linkedin_link'," ")
 
         team.name = name
         team.post = post
@@ -77,15 +77,15 @@ def update_our_team(request):
         return Response({"error":"Unauthourized for updating our_team"},status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(['Delete'])
+@api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_our_team(request):
     idd = int(request.GET.get("id"))
-    user = request.get
+    user = request.user
     if user.role == "Admin":
         team = OurTeam.objects.get(id=idd)
         team.delete()
-        return Response({"Team member Deleted Successfully"})
+        return Response({"success":"Team member Deleted Successfully"})
     else:
-        return Response({"error":"Unauthourized for updating our_team"},status=status.HTTP_401_UNAUTHORIZED)
+        return Response({"error":"Unauthourized for updating team members"},status=status.HTTP_401_UNAUTHORIZED)
 

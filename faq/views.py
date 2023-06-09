@@ -9,8 +9,8 @@ from rest_framework import status
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_faq(request):
-    user = request.get
-    if user == 'Admin':
+    user = request.user
+    if user.role == 'Admin':
         heading = request.POST['heading']
         detail = request.POST['detail']
         value =request.POST['value']
@@ -21,27 +21,25 @@ def create_faq(request):
             value = value
         )
         faq.save()
-        return Response({"FAQ created successfully"})
+        return Response({"success":"FAQ created successfully"})
     else:
         return Response({"error":"Unauthourized for creating FAQ"}, status=status.HTTP_401_UNAUTHORIZED)
 
-@api_view(["PUT"])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def update_faq(request):
-    user = request.get
+    user = request.user
     idd = int(request.GET.get("id"))
-    if user == 'Admin':
+    if user.role == 'Admin':
         faq = FAQ.objects.get(id=idd )
         heading = request.POST.get('heading')
         detail = request.POST.get('detail')
-        value =request.POST.get('value')
 
         faq.heading = heading
         faq.detail = detail
-        faq.value = value
 
         faq.save()
-        return Response({"FAQ Updated Successfully"})
+        return Response({"success":"FAQ Updated Successfully"})
     else:
         return Response({"error":"Unauthourized for updating  FAQ"}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -52,18 +50,18 @@ def faq_list(request):
     serializers = FAQSerializer(faq, many = True)
     return Response({
         "FAQs": serializers.data
-    })
+    },status=status.HTTP_200_OK)
 
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_faq(request):
-    user = request.get
+    user = request.user
     idd = int(request.GET.get("id"))
-    if user == 'Admin':
+    if user.role == 'Admin':
         faq = FAQ.objects.get(id=idd )
         faq.delete()
-        return Response({"FAQ Deleted Successfully"})
+        return Response({"success":"FAQ Deleted Successfully"})
     else:
         return Response({"error":"Unauthourized for deleting  FAQ"}, status=status.HTTP_401_UNAUTHORIZED)
 
