@@ -1,7 +1,9 @@
 from django.db import models
 from ckeditor.fields import RichTextField
 from account.models import Player, UserProfile,Organizer,Organization
-    
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 class EliminationMode(models.Model):
     STAGE_ELIMINTAION_MODES = (
         ('Single Elimination','Single Elimination'),
@@ -54,6 +56,8 @@ class Event(models.Model):
     event_end_date = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_published = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return self.event_name
@@ -101,8 +105,8 @@ class Tournament(models.Model):
         ('Upcoming', 'Upcoming')
     )
     slug = models.SlugField(max_length=100 ,unique=True)
-    organizer = models.ForeignKey(Organizer,on_delete=models.CASCADE)
-    event = models.ForeignKey(Event,on_delete=models.CASCADE)
+    organizer = models.ForeignKey(Organizer,on_delete=models.CASCADE,related_name='organizer')
+    event = models.ForeignKey(Event,on_delete=models.CASCADE,related_name='event')
     location = models.CharField(max_length=100,blank=True)
     tournament_name = models.CharField(max_length=700)
     tournament_logo = models.FileField(blank=True)
@@ -113,7 +117,7 @@ class Tournament(models.Model):
     is_free = models.BooleanField(default=False)
     tournament_fee = models.FloatField(blank=True,null=True)
     maximum_no_of_participants = models.IntegerField(default=0)
-    game = models.ForeignKey(Game,on_delete=models.CASCADE)
+    game = models.ForeignKey(Game,on_delete=models.CASCADE,related_name='game')
     tournament_description = RichTextField(blank=True)
     tournament_short_description = models.CharField(blank=True, max_length= 150)
     tournament_rules = RichTextField(blank=True)
@@ -129,12 +133,70 @@ class Tournament(models.Model):
     accept_registration_automatic = models.BooleanField(default=False)
     contact_email = models.CharField(max_length=500,blank=True)
     discord_link = models.URLField(max_length=500,blank=True)
+    is_verified = models.BooleanField(default=False)
+    no_of_participants = models.IntegerField(default=0)
+
+    def update_no_of_participants(self):
+        self.no_of_participants = self.team_registrations.count()
+        self.save()
+
 
     def __str__(self) -> str:
         return self.tournament_name
-    
-    
 
+
+class SoloTournamentRegistration(models.Model):
+    REGISTRATION_STATUS_CHOICES = (
+        ('Ongoing Review','Ongoing Review'),
+        ('Verified','Verified'),
+        ('Rejected','Rejected'),
+    )
+    
+    PAYMENT_CHOICES = (
+        ('Cash','Cash'),
+        ('Bank Transfer','Bank Transfer'),
+        ('Esewa','Esewa'),
+        ('Other','Other'),
+    )
+
+    tournament = models.ForeignKey(Tournament,on_delete=models.CASCADE,related_name='solo_registrations')
+    player = models.ForeignKey(UserProfile,on_delete=models.CASCADE)
+    registration_date = models.DateTimeField(auto_now_add=True)
+    registration_fee = models.FloatField()
+    registration_status = models.CharField(max_length=500,choices=REGISTRATION_STATUS_CHOICES,default="Ongoing Review")
+    payment_method = models.CharField(max_length=500,choices=PAYMENT_CHOICES,default="Other")
+
+    def __str__(self) -> str:
+        return self.player.username
+
+class TeamTournamentRegistration(models.Model):
+    REGISTRATION_STATUS_CHOICES = (
+        ('Ongoing Review','Ongoing Review'),
+        ('Verified','Verified'),
+        ('Rejected','Rejected'),
+    )
+    
+    PAYMENT_CHOICES = (
+        ('Cash','Cash'),
+        ('Bank Transfer','Bank Transfer'),
+        ('Esewa','Esewa'),
+        ('Other','Other'),
+    )
+
+    tournament = models.ForeignKey(Tournament,on_delete=models.CASCADE,related_name='team_registrations')
+    team = models.ForeignKey(Team,on_delete=models.CASCADE)
+    registration_date = models.DateTimeField(auto_now_add=True)
+    registration_fee = models.FloatField()
+    registration_status = models.CharField(max_length=500,choices=REGISTRATION_STATUS_CHOICES,default="Ongoing Review")
+    payment_method = models.CharField(max_length=500,choices=PAYMENT_CHOICES,default="Other")
+
+    def __str__(self) -> str:
+        return self.team.team_name
+
+@receiver(post_save, sender=TeamTournamentRegistration)
+def update_tournament_no_of_participants(sender, instance, created, **kwargs):
+    tournament = instance.tournament
+    tournament.update_no_of_participants()
     
 class TournamentStreams(models.Model):
     tournament = models.ForeignKey(Tournament,on_delete=models.CASCADE,related_name='streams')
@@ -165,81 +227,18 @@ class TournamentFAQ(models.Model):
         return self.heading
     
 class Stage(models.Model):
-    stage_elimation_mode = models.ForeignKey(EliminationMode,on_delete=models.DO_NOTHING)
     stage_number = models.IntegerField()
-    no_of_participants = models.IntegerField()
-    no_of_groups = models.IntegerField()
     stage_name = models.CharField(max_length=500)
+    stage_elimation_mode = models.ForeignKey(EliminationMode,on_delete=models.DO_NOTHING)
+    input_no_of_teams = models.IntegerField()
+    output_no_of_teams = models.IntegerField()
+    input_teams = models.ManyToManyField(Team,related_name='input_teams')
+    output_teams = models.ManyToManyField(Team,related_name='output_teams')
     tournament = models.ForeignKey(Tournament,on_delete=models.CASCADE)
 
     def __str__(self) -> str:
         return self.stage_name
     
-class SoloTournamentRegistration(models.Model):
-    REGISTRATION_STATUS_CHOICES = (
-        ('Ongoing Review','Ongoing Review'),
-        ('Verified','Verified'),
-        ('Rejected','Rejected'),
-    )
-    
-    PAYMENT_CHOICES = (
-        ('Cash','Cash'),
-        ('Bank Transfer','Bank Transfer'),
-        ('Esewa','Esewa'),
-        ('Other','Other'),
-    )
-
-    tournament = models.ForeignKey(Tournament,on_delete=models.CASCADE)
-    player = models.ForeignKey(UserProfile,on_delete=models.CASCADE)
-    registration_date = models.DateTimeField(auto_now_add=True)
-    registration_fee = models.FloatField()
-    registration_status = models.CharField(max_length=500,choices=REGISTRATION_STATUS_CHOICES,default="Ongoing Review")
-    payment_method = models.CharField(max_length=500,choices=PAYMENT_CHOICES,default="Other")
-    current_stage = models.ForeignKey(Stage,related_name="current_stage",null=True,on_delete=models.DO_NOTHING)
-
-    def __str__(self) -> str:
-        return self.player.username
-
-class TeamTournamentRegistration(models.Model):
-    REGISTRATION_STATUS_CHOICES = (
-        ('Ongoing Review','Ongoing Review'),
-        ('Verified','Verified'),
-        ('Rejected','Rejected'),
-    )
-    
-    PAYMENT_CHOICES = (
-        ('Cash','Cash'),
-        ('Bank Transfer','Bank Transfer'),
-        ('Esewa','Esewa'),
-        ('Other','Other'),
-    )
-
-    tournament = models.ForeignKey(Tournament,on_delete=models.CASCADE)
-    team = models.ForeignKey(Team,on_delete=models.CASCADE)
-    registration_date = models.DateTimeField(auto_now_add=True)
-    registration_fee = models.FloatField()
-    registration_status = models.CharField(max_length=500,choices=REGISTRATION_STATUS_CHOICES,default="Ongoing Review")
-    payment_method = models.CharField(max_length=500,choices=PAYMENT_CHOICES,default="Other")
-    current_stage = models.ForeignKey(Stage,related_name="current_stagee",null=True,on_delete=models.CASCADE)
-
-    def __str__(self) -> str:
-        return self.team.team_name
-
-class SoloGroup(models.Model):
-    group_name = models.CharField(max_length=500)
-    stage = models.ForeignKey(Stage,on_delete=models.CASCADE)
-    participants = models.ManyToManyField(UserProfile)
-
-    def __str__(self) -> str:
-        return self.group_name
-
-class TeamGroup(models.Model):
-    group_name = models.CharField(max_length=500)
-    stage = models.ForeignKey(Stage,on_delete=models.CASCADE)
-    participants = models.ManyToManyField(Team)
-
-    def __str__(self) -> str:
-        return self.group_name
     
 class SoloMatch(models.Model):
     RESULT_CHOICES = (
@@ -248,7 +247,6 @@ class SoloMatch(models.Model):
         ('DRAW','DRAW'),
     )
     stage = models.ForeignKey(Stage,on_delete=models.DO_NOTHING)
-    group = models.ForeignKey(SoloGroup,on_delete=models.DO_NOTHING)
     player1 = models.ForeignKey(UserProfile,related_name='player1',on_delete=models.DO_NOTHING)
     player2 = models.ForeignKey(UserProfile,related_name='player2',on_delete=models.DO_NOTHING)
     player1_points = models.FloatField()
@@ -264,9 +262,10 @@ class TeamMatch(models.Model):
         ('WIN','WIN'),
         ('LOSE','LOSE'),
         ('DRAW','DRAW'),
+        ('ABORTED','ABORTED'),
+        ('ABORTED','ABORTED'),
     )
     stage = models.ForeignKey(Stage,on_delete=models.DO_NOTHING)
-    group = models.ForeignKey(TeamGroup,on_delete=models.DO_NOTHING)
     team1 = models.ForeignKey(Team,related_name='team1',on_delete=models.DO_NOTHING)
     team2 = models.ForeignKey(Team,related_name='team2',on_delete=models.DO_NOTHING)
     team1_points = models.FloatField()
@@ -276,15 +275,3 @@ class TeamMatch(models.Model):
 
     def __str__(self) -> str:
         return self.team1.team_name + " VS " + self.team2.team_name
-
-    
-class TournamentBracket(models.Model):
-    bracket_types = (
-        ('Winner Bracket', 'Winner Bracket'),
-        ('Looser Bracket', 'Looser Bracket')
-    )
-    bracket_type = models.CharField(choices=bracket_types, max_length=30)
-    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
-    participants = models.ManyToManyField(Team, related_name='Team_participants')
-    def __str__(self):
-        return f'{self.bracket_type} for {self.tournament}'

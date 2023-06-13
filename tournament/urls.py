@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('create-event/', views.create_event, name='create_event'),
+    path("verify-event/",views.verify_event, name="verify_event"),
     path('update-event/', views.update_event, name='update_event'),
     path('all-events/', views.all_event_list, name='all_event_list'),
     path('events/', views.event_list, name='events'),
@@ -39,9 +40,10 @@ urlpatterns = [
     path('delete-elimination-mode/', views.delete_elimination_mode, name='delete_elimination_mode'),
     path('event-tournaments/', views.event_tournaments_list, name='event_tournaments_list'),
     path('create-tournament/', views.create_tournament, name='create_tournament'),
-    path('tournaments/', views.tournaments_list, name='tournaments'),
+    path('all-tournaments/', views.tournaments_list, name='tournaments'),
+    path("verify-tournament/",views.verify_tournament, name="verify_tournament"),
     path('get-tournament-detail/', views.tournament_details, name='tournament_details'),
-    path('tournament-detail/<int:id>/', views.tournament_detail, name='tournament_detail'),
+    path('tournament-detail/<str:slug>/', views.tournament_detail, name='tournament_detail'),
     path('update-tournament/', views.update_tournament, name='update_tournament'),
     path('delete-tournament/', views.delete_tournament, name='delete_tournament'),
     path('publish-tournament/', views.open_tournament_registration, name='open_tournament_registration'),

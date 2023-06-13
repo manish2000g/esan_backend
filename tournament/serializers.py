@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (EliminationMode, EventNewsFeed, Game, Team, Event, EventFAQ, EventSponsor,
-                     Tournament, TournamentFAQ, TournamentSponsor, TournamentStreams, Stage,SoloTournamentRegistration,TeamTournamentRegistration,SoloGroup,TeamGroup,SoloMatch,TeamMatch)
+                     Tournament, TournamentFAQ, TournamentSponsor, TournamentStreams, Stage,SoloTournamentRegistration,TeamTournamentRegistration,SoloMatch,TeamMatch)
 from account.serializers import UserProfileSerializer,OrganizationSerializer,OrganizerSerializer
 
 class EliminationModeSerializer(serializers.ModelSerializer):
@@ -43,13 +43,19 @@ class EventSmallSerializer(serializers.ModelSerializer):
     organizer = OrganizerSerializer(read_only=True)
     class Meta:
         model = Event
-        fields = ('id', 'organizer', 'event_name', 'event_start_date', 'event_end_date','event_thumbnail','event_thumbnail_alt_description','slug')
+        fields = ('id', 'organizer', 'event_name', 'event_start_date', 'event_end_date','event_thumbnail','event_thumbnail_alt_description','slug','is_published')
+
+class EventVerifySerializer(serializers.ModelSerializer):
+    organizer = OrganizerSerializer(read_only=True)
+    class Meta:
+        model = Event
+        fields = ('id', 'organizer', 'event_name','slug','is_verified')
 
 class EventSerializer(serializers.ModelSerializer):
     organizer = OrganizerSerializer(read_only=True)
     class Meta:
         model = Event
-        fields = ('id', 'organizer', 'event_name', 'event_description', 'event_start_date', 'event_end_date','event_thumbnail','event_thumbnail_alt_description','slug')
+        fields = ('id', 'organizer', 'event_name', 'event_description', 'event_start_date', 'event_end_date','event_thumbnail','event_thumbnail_alt_description','slug','is_published')
 
 class EventFAQSerializer(serializers.ModelSerializer):
     event = EventSerializer(read_only=True)
@@ -101,10 +107,19 @@ class TournamentSerializer(serializers.ModelSerializer):
     faqs = TournamentFAQSerializer(many=True, read_only=True)
     sponsors = TournamentSponsorSerializer(many=True, read_only=True)
     streams = TournamentStreamsSerializer(many=True, read_only=True)
-
+    organizer = OrganizerSerializer(read_only=True)
     class Meta:
         model = Tournament
         exclude = ['event']
+
+
+class TournamentVerifySerializer(serializers.ModelSerializer):
+    event = EventVerifySerializer(read_only=True)
+    organizer = OrganizerSerializer(read_only=True)
+    game = GameSerializer(read_only=True)
+    class Meta:
+        model = Tournament
+        fields = ['id','slug','is_verified','tournament_mode','is_published','tournament_name','event','organizer','game']
 
 
 class StageSerializer(serializers.ModelSerializer):
@@ -127,22 +142,10 @@ class SoloTournamentRegistrationSerializer(serializers.ModelSerializer):
 
 class TeamTournamentRegistrationSerializer(serializers.ModelSerializer):
     tournament = TournamentSerializer(read_only=True)
-    players = UserProfileSerializer(read_only=True)
-    team = TeamOrgSerializer(read_only=True)
     class Meta:
         model = TeamTournamentRegistration
         fields = '__all__'
 
-
-class SoloGroupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SoloGroup
-        fields = '__all__'
-        
-class TeamGroupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TeamGroup
-        fields = '__all__'
 
 
 class SoloMatchSerializer(serializers.ModelSerializer):
