@@ -89,6 +89,13 @@ class TournamentSponsorSerializer(serializers.ModelSerializer):
         model = TournamentSponsor
         fields = ('id', 'sponsor_name', 'sponsorship_category','order', 'sponsor_banner','sponsor_link')
 
+class TournamentSmallSerializer(serializers.ModelSerializer):
+    game = GameSerializer(read_only=True)
+
+    class Meta:
+        model = Tournament
+        exclude = ['event']
+
 class TournamentSerializer(serializers.ModelSerializer):
     game = GameSerializer(read_only=True)
     faqs = TournamentFAQSerializer(many=True, read_only=True)

@@ -2,7 +2,7 @@ from datetime import datetime
 from .models import EliminationMode, Event, EventFAQ, EventNewsFeed, EventSponsor, Stage,Team,Game, TeamTournamentRegistration, Tournament, TournamentFAQ, TournamentSponsor, TournamentStreams
 from account.models import Organizer, UserProfile,Organization
 from account.serializers import UserProfileSerializer
-from .serializers import EliminationModeSerializer, EventFAQSerializer, EventNewsFeedSerializer, EventSponsorSerializer,GameSerializer,GameSmallSerializer, StageSerializer, TeamTournamentRegistrationSerializer, TournamentFAQSerializer, TournamentSerializer, TournamentSponsorSerializer, EventSerializer, TeamSerializer,EventSmallSerializer, TournamentStreamsSerializer
+from .serializers import EliminationModeSerializer, EventFAQSerializer, EventNewsFeedSerializer, EventSponsorSerializer,GameSerializer,GameSmallSerializer, StageSerializer, TeamTournamentRegistrationSerializer, TournamentFAQSerializer, TournamentSerializer, TournamentSponsorSerializer, EventSerializer, TeamSerializer,EventSmallSerializer, TournamentStreamsSerializer,TournamentSmallSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -502,7 +502,16 @@ def delete_team(request):
 @api_view(['GET'])
 def tournaments_list(request):
     tournaments = Tournament.objects.filter(is_published=True)
-    serializers = TournamentSerializer(tournaments, many = True)
+    serializers = TournamentSmallSerializer(tournaments, many = True)
+    return Response({
+        "tournaments": serializers.data
+    })
+
+@api_view(['GET'])
+def open_tournaments(request):
+    current_datetime = datetime.now()
+    tournaments = Tournament.objects.filter(is_published=True, registration_opening_date__lte=current_datetime)
+    serializers = TournamentSerializer(tournaments, many=True)
     return Response({
         "tournaments": serializers.data
     })
