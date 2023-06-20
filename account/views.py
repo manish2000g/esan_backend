@@ -236,11 +236,34 @@ def all_players(request):
         playerreqs = PlayerRequest.objects.filter(organization=orgg,request_status="Requested").values_list("player")
         all_prss = PlayerRequest.objects.filter(organization=orgg)
         all_prss_ser = PlayerRequestSerializer(all_prss,many=True)
-        free_players = players.exclude(id__in=teams.values('players')).exclude(id__in=organizations.values('players')).exclude(id__in=playerreqs)
+        free_players = players.exclude(id__in=teams.values('players')).exclude(id__in=organizations.values_list('players')).exclude(id__in=playerreqs)
         free_players_ser = UserProfileSerializer(free_players,many=True)
         return Response({"free_players":free_players_ser.data,"player_requests":all_prss_ser.data}, status=201)
     except:
         return Response({"error":"Problem fetching Players"},status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def all_organizations(request):
+    try:
+        organizations = Organization.objects.all()
+        user = request.user
+        if user.role == "Player":
+            player_requests = PlayerRequest.objects.filter(player=user,request_status="Requested")
+            player_requests2 = PlayerRequest.objects.filter(player=user,request_status="Requested").values_list("organization")
+            player_requests_ser = PlayerRequestSerializer(player_requests,many=True)
+            organizations = Organization.objects.exclude(players=user)
+            orgs = organizations.exclude(id__in=player_requests2)
+            organizations_ser = OrganizationSerializer(orgs,many=True)
+            return Response({"player_requests":player_requests_ser.data,"free_organizations":organizations_ser.data},status=status.HTTP_200_OK)
+        elif user.role == "Organization":
+            orgg = Organization.objects.get(user=user)
+            player_requests = PlayerRequest.objects.filter(organization=orgg,request_status="Requested")
+            player_requests_ser = PlayerRequestSerializer(player_requests,many=True)
+            organizations_ser = OrganizationSerializer(organizations,many=True)
+            return Response({"player_requests":player_requests_ser.data,"free_organizations":organizations_ser.data},status=status.HTTP_200_OK)
+    except:
+        return Response({"error":"Problem fetching organizations"},status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

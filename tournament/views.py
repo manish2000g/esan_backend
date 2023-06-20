@@ -522,7 +522,7 @@ def tournaments_list(request):
     else:
         tournaments = Tournament.objects.filter(is_published=True, is_verified=True)
     
-    serializers = TournamentVerifySerializer(tournaments, many=True)
+    serializers = TournamentSerializer(tournaments, many=True)
     return Response({
         "tournaments": serializers.data
     })
@@ -1255,7 +1255,7 @@ def register_team_initials(request):
         return Response({"error": "Invalid tournament or team"}, status=404)
 
     gam = tournament.game
-    teamss = Team.objeccts.filter(organization=orgg,game=gam)
+    teamss = Team.objects.filter(organization=orgg,game=gam)
     teamss_ser = TeamSerializer(teamss,many=True)
     return Response({"teamss": teamss_ser.data})
     

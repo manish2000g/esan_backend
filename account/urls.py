@@ -22,6 +22,7 @@ urlpatterns = [
      path("update-user-detail/",views.update_user_detail, name="update_user_detail"),
      path('games/', views.game_list, name='game_list'),
      path('organization-players/', views.organization_players, name='organization_players'),
+     path('all-organizations/', views.all_organizations, name='all_organizations'),
      path('all-players/', views.all_players, name='all_players'),
      path('request-player/', views.request_player, name='request_player'),
      path('my-requests/', views.my_requests, name='my_requests'),
